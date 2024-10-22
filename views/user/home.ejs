@@ -15,8 +15,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="evara-frontend/assets/imgs/theme/favicon.svg">
     <!-- Template CSS -->
     <link rel="stylesheet" href="evara-frontend/assets/css/main.css?v=3.4">
-   
-    
+
 </head>
 
 <body>
@@ -212,12 +211,20 @@
                                         <li><a href="#"><img src="evara-frontend/assets/imgs/theme/flag-dt.png" alt="">Deutsch</a></li>
                                         <li><a href="#"><img src="evara-frontend/assets/imgs/theme/flag-ru.png" alt="">Pусский</a></li>
                                     </ul>
-                                </li>
-                                <li><i class="fi-rs-user"></i>
-                                    <a href="/login">Log In</a>
-                                <li><i class="fi-rs-user"></i>
-                                    <a href="/signup">Sign up</a>
-                                </li>
+                                    <%if(locals.user){%>
+                                        <div>
+                                            <a href="#" class="sign-in-link" style="margin-right: 10px"><%=locals.user.username%></a>
+                                                <a style="margin-right:5px" href="/userProfile">Profile</a>
+                                                <a href="/logout">Logout</a>
+                                        </div>
+                                    <%}else{%>
+                                    <li><i class="fi-rs-user"></i>
+                                        <a href="/login">Log In</a>
+                                    </li> 
+                                    <li><i class="fi-rs-user"></i>
+                                        <a href="/signup">Sign up</a>
+                                    </li>
+                                    <% } %>
                             </ul>
                         </div>
                     </div>

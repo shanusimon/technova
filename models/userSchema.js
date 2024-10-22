@@ -3,7 +3,7 @@ const { emit } = require("nodemon");
 const {Schema} = mongoose;
 
 const userSchema = new Schema({
-    name:{
+    username:{
         type:String,
         required:true
     },
@@ -21,7 +21,7 @@ const userSchema = new Schema({
     },
     googleId:{
         type:String,
-        // unique:true
+        unique:true
     },
     password:{
         type:String,

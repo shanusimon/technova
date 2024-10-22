@@ -1,0 +1,55 @@
+<%- include("../partials/admin/header")  %>
+
+<div class="container mt-4">
+    <form class="searchform mb-4">
+        <div class="input-group">
+            <input list="search_terms" type="text" class="form-control" placeholder="Search customers">
+            <button class="btn btn-light bg" type="button"> 
+                <i class="material-icons md-search"></i> 
+            </button>
+        </div>
+    </form>
+    
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone No</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for(let i = 0; i < data.length; i++) { %>
+                <tr>
+                    <td><%= data[i].username %></td>
+                    <td><%= data[i].email %></td>
+                    <td><%= data[i].phone %></td>
+                    <td>
+                        <% if(data[i].isBlocked === false) { %>
+                            <a href="/admin/block-user?id=<%= data[i]._id %>" class="btn btn-danger btn-sm">Block</a>
+                        <% } else { %>
+                            <a href="/admin/unblock-user?id=<%= data[i]._id %>" class="btn btn-success btn-sm">Unblock</a>
+                        <% } %>
+                    </td>
+                </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="container mt-3">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-20" style="margin-right: 200px;">
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<%- include("../partials/admin/footer")  %>
