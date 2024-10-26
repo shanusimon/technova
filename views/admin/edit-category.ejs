@@ -1,0 +1,52 @@
+<%- include("../partials/admin/header")  %>
+
+<section class="content-main">
+    <div class="content-header">
+        <h2 class="content-title">Edit Category</h2>
+        <p>Update the category details</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form action="/admin/updateCategory/<%= category._id %>" method="post" onsubmit="return validateEditForm();">
+                <div class="mb-4">
+                    <label for="name" class="form-label">Category Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="<%= category.name %>">
+                    <small id="editNameError" style="color: red; display: none;">Name is required</small>
+                </div>
+
+                <div class="mb-4">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description"><%= category.description %></textarea>
+                    <small id="editDescriptionError" style="color: red; display: none;">Description can't be empty</small>
+                </div>
+
+                <div class="d-grid">
+                    <button class="btn btn-primary" type="submit">Update Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+function validateEditForm() {
+    const name = document.getElementById('name').value.trim();
+    const description = document.getElementById('description').value.trim();
+    let isValid = true;
+
+    if (name === "") {
+        document.getElementById('editNameError').style.display = 'block';
+        isValid = false;
+    }
+
+    if (description === "") {
+        document.getElementById('editDescriptionError').style.display = 'block';
+        isValid = false;
+    }
+
+    return isValid;
+}
+</script>
+
+<%- include("../partials/admin/footer")  %>

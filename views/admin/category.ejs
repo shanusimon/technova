@@ -39,18 +39,14 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th class="text-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" />
-                                        </div>
-                                    </th>
+                                    <th class="text-center"></th>
                                     <th>Name</th>
                                     <th>Description</th>
                                     <th>Offer price</th>
-                                    <th>Status</th>
+                                    <th>Offer</th>
+                                    <th>Status</th> 
                                     <th>List/unList</th>
-                                    <th>Edit</th>
-                                    <th class="text-end">Action</th>
+                                    <th>Edit</th> >
                                 </tr>
                             </thead>
                             <tbody>
@@ -61,26 +57,46 @@
                                     <td><%= category.description %></td>
                                     <td>
                                         <% if (category.categoryOffer) { %>
-                                            <%= category.categoryOffer %>
+                                            <%= category.categoryOffer %>%
                                         <% } else { %>
                                             0%
                                         <% } %>
                                     </td>
-                                    <td class="text-end">
+                    
+                                    <td>
                                         <% if (category.categoryOffer === 0) { %>
-                                            <button class="btn btn-info btn-equal" style="width: 150px;" onclick="addOffer('<%= category._id %>')">
-                                                Add Offer
-                                            </button>                                            
+                                            <button class="btn btn-info btn-sm" onclick="addOffer('<%= category._id %>')">Add Offer</button>
                                         <% } else { %>
-                                            <button class="btn btn-info btn-equal" style="width: 150px;">
-                                                <a href="#" class="text-white d-block text-center" onclick="removeOffer('<%= category._id %>')">Remove Offer</a>
+                                            <button class="btn btn-info btn-sm" onclick="removeOffer('<%= category._id %>')">Remove Offer</button>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (category.isListed) { %>
+                                            <span class="badge rounded-pill alert-success">Listed</span>
+                                        <% } else { %>
+                                            <span class="badge rounded-pill alert-danger">Unlisted</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (category.isListed) { %>
+                                            <button class="btn btn-danger btn-sm">
+                                                <a href="/admin/listcategory?id=<%=category._id%>" class="text-white text-decoration-none">Unlist</a>
+                                            </button>
+                                        <% } else { %>
+                                            <button class="btn btn-success btn-sm">
+                                                <a href="/admin/unlistcategory?id=<%=category._id%>" class="text-white text-decoration-none">List</a>
                                             </button>
                                         <% } %>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm">
+                                            <a href="/admin/editcategory?id=<%=category._id %>">Edit</a>
+                                        </button>
                                     </td>
                                 </tr>
                                 <% }); %>
                             </tbody>
-                        </table>
+                        </table>                        
                     </div>
                 </div>
             </div>
@@ -89,7 +105,7 @@
 </section>
 
 <script>
-function handleFormSubmit(event) {
+async function handleFormSubmit(event) {
     event.preventDefault();
 
     if (!validateForm()) {
@@ -99,25 +115,26 @@ function handleFormSubmit(event) {
     const name = document.getElementById("name").value.trim();
     const description = document.getElementById("description").value.trim();
 
-    fetch('/admin/addCategory', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, description })
-    })
-    .then(response => {
+    try {
+        const response = await fetch('/admin/addCategory', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, description })
+        });
+
         if (!response.ok) {
-            return response.json().then(err => {
-                throw new Error(err.error);
-            });
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Unknown error');
         }
-        return response.json();
-    })
-    .then(data => {
+
+
+        const data = await response.json();
+
         location.reload();
-    })
-    .catch(error => {
+    } catch (error) {
+
         if (error.message === "Category already exists") {
             Swal.fire({
                 icon: 'error',
@@ -131,8 +148,10 @@ function handleFormSubmit(event) {
                 text: "An error occurred while adding the category"
             });
         }
-    });
+    }
 }
+
+
 
 function validateForm() {
     clearErrorMessages();

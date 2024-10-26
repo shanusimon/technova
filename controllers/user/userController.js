@@ -1,4 +1,6 @@
 const User = require("../../models/userSchema");
+const Category = require("../../models/categorySchema");
+const Product = require("../../models/productSchema");
 const nodemailer = require("nodemailer");
 const env = require("dotenv").config();
 const bcrypt = require("bcrypt");
@@ -7,11 +9,24 @@ const bcrypt = require("bcrypt");
 const loadHomepage = async (req,res) => {
     try {
         const user = req.session.user;
+        const categories = await Category.find({isListed:true});
+        let productData = await Product.find({isBlocked:false,
+            category:{$in:categories.map(category=>category._id)},quantity:{$gt:0}
+        });
+        productData.sort((a,b)=>new Date(b.createdOn)-new Date(a.createdOn));
+        productData = productData.slice(0,4);
+
+
         if(user){
             const userData = await User.findOne({_id:user._id});
-            res.render("home",{user:userData})
+            res.render("home",{
+                user:userData,
+                products:productData
+            })
         }else{
-            return res.render("home");
+            return res.render("home",{
+                products:productData
+            });
         }
     } catch (error) {
         console.log("Home Page Not found",error.message);
@@ -35,7 +50,6 @@ const loadSignup = async (req,res) => {
         console.log("Home page not Loading",error);
         res.status(500).send("Server Error");
     }
-    
 }
 
 function generateOtp(){
@@ -121,7 +135,6 @@ const securePassword = async(password) => {
 const verifyOtp = async (req,res) => {
     try {
         const {otp} = req.body;
-        // console.log(otp)
         if(otp===req.session.userOtp){
             const user = req.session.userData; 
             const passwordHash = await securePassword(user.password);
@@ -188,7 +201,7 @@ const login = async (req,res) => {
         if(!findUser){
             return res.render("login",{message:"User not found"})
         }
-        if(findUser.isBlocked){
+        if(findUser.isBlocked==true){
             return res.render("login",{message:"User is Blocked by Admin"})
         }
         const passwordMatch = await bcrypt.compare(password,findUser.password);
@@ -219,6 +232,22 @@ const logout = async (req,res) => {
         res.redirect('/pageNotFound');
     }
 }
+const viewProduct = async (req,res) => {
+    try {
+        const productID = req.query.id;
+        const productData = await Product.findOne({_id:productID});
+        const category = await Category.findOne({_id:productData.category}) 
+        res.render("productview-page",{
+            product:productData,
+            category:category
+        })
+    } catch (error) {
+        
+    }
+
+    
+    
+}
 
 module.exports ={
     loadHomepage,
@@ -229,6 +258,7 @@ module.exports ={
     resendOtp,
     loadlogin,
     login,
-    logout
+    logout,
+    viewProduct
 }
     

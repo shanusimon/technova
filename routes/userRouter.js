@@ -3,6 +3,13 @@ const router = express.Router();
 const userController = require("../controllers/user/userController");
 const passport = require("passport");
 
+
+router.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    res.locals.userData = req.session.userData || null;
+    next();
+  });
+  
 router.use(express.static("public"));
 
 router.get('/pagenotFound',userController.pageNotfound);
@@ -21,6 +28,7 @@ router.get('/login',userController.loadlogin);
 router.post('/login',userController.login);
 
 router.get("/logout",userController.logout)
+router.get("/productDeatils",userController.viewProduct);
 
 
 module.exports = router;
