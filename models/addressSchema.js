@@ -7,7 +7,7 @@ const addressSchema = new Schema({
         ref:"User",
         required:true
     },
-    address:[{
+    addresses:[{
         addressType:{
             type:String,
             required:true

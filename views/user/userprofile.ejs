@@ -1,0 +1,242 @@
+<%- include('../partials/user/header') %> 
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="index.html" rel="nofollow">Home</a>
+                    <span></span> Pages
+                    <span></span> Account
+                </div>
+            </div>
+        </div>
+        <section class="pt-150 pb-150">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-10 m-auto">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="dashboard-menu">
+                                    <ul class="nav flex-column" role="tablist">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="false"><i class="fi-rs-settings-sliders mr-10"></i>Dashboard</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="orders-tab" data-bs-toggle="tab" href="#orders" role="tab" aria-controls="orders" aria-selected="false"><i class="fi-rs-shopping-bag mr-10"></i>Orders</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="track-orders-tab" data-bs-toggle="tab" href="#track-orders" role="tab" aria-controls="track-orders" aria-selected="false"><i class="fi-rs-shopping-cart-check mr-10"></i>Track Your Order</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="address-tab" data-bs-toggle="tab" href="#address" role="tab" aria-controls="address" aria-selected="true"><i class="fi-rs-marker mr-10"></i>My Address</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="account-detail-tab" data-bs-toggle="tab" href="#account-detail" role="tab" aria-controls="account-detail" aria-selected="true"><i class="fi-rs-user mr-10"></i>Account details</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="page-login-register.html"><i class="fi-rs-sign-out mr-10"></i>Logout</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="tab-content dashboard-content">
+                                    <div class="tab-pane fade active show" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">Hello <%= user.username %> </h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <p>From your account dashboard. you can easily check &amp; view your <a href="#">recent orders</a>, manage your <a href="#">shipping and billing address</a> and <a href="#">edit your password and account details.</a></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">Your Orders</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Order ID</th>
+                                                                <th>Date</th>
+                                                                <th>Status</th>
+                                                                <th>Total</th>
+                                                                <th>Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <% if (orders && orders.length > 0) { %>
+                                                                <% orders.forEach(order => { %>
+                                                                    <tr>
+                                                                        <td>#<%= order.orderId %></td>
+                                                                        <td><%= new Date(order.creaetedOn).toLocaleDateString() %></td>
+                                                                        <td><%= order.status %></td>
+                                                                        <td>₹<%= order.finalAmount %> for <%= order.orderedItems.length %> item(s)</td>
+                                                                        <td>
+                                                                            <a href="/order-details?id=<%= order._id %>" class="btn-small d-block">View</a>
+                                                                        </td>
+                                                                    </tr>
+                                                                <% }); %>
+                                                            <% } else { %>
+                                                                <tr>
+                                                                    <td colspan="5" class="text-center">No orders found</td>
+                                                                </tr>
+                                                            <% } %>
+                                                        </tbody>                                                
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="track-orders" role="tabpanel" aria-labelledby="track-orders-tab">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">Orders tracking</h5>
+                                            </div>
+                                            <div class="card-body contact-from-area">
+                                                <p>To track your order please enter your OrderID in the box below and press "Track" button. This was given to you on your receipt and in the confirmation email you should have received.</p>
+                                                <div class="row">
+                                                    <div class="col-lg-8">
+                                                        <form class="contact-form-style mt-30 mb-50" action="#" method="post">
+                                                            <div class="input-style mb-20">
+                                                                <label>Order ID</label>
+                                                                <input name="order-id" placeholder="Found in your order confirmation email" type="text" class="square">
+                                                            </div>
+                                                            <div class="input-style mb-20">
+                                                                <label>Billing email</label>
+                                                                <input name="billing-email" placeholder="Email you used during checkout" type="email" class="square">
+                                                            </div>
+                                                            <button class="submit submit-auto-width" type="submit">Track</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
+                                        <div class="row">
+                                            <% if (addresses && addresses.length > 0) { %>
+                                                <% addresses.forEach(address => { %>
+                                                    <div class="col-lg-6">
+                                                        <div class="card mb-3 mb-lg-0">
+                                                            <div class="card-header">
+                                                                <h5 class="mb-0"><%= address.type %></h5>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <p><strong>Address Type:</strong> <%= address.addressType %></p>
+                                                                <p><strong>Name:</strong> <%= address.name %></p>
+                                                                <p><strong>City:</strong> <%= address.city %></p>
+                                                                <p><strong>Landmark:</strong> <%= address.landMark %></p>
+                                                                <p><strong>State:</strong> <%= address.state %></p>
+                                                                <p><strong>Pincode:</strong> <%= address.pincode %></p>
+                                                                <p><strong>Phone:</strong> <%= address.phone %></p>
+                                                                <p><strong>Alternate Phone:</strong> <%= address.althone %></p>
+                                                                <!-- <a href="/edit-address/<%= address._id %>" class="btn-small">Edit</a> -->
+                                                                <a href="/delete-address/?id=<%= address._id %>" class="btn-small">Delete</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <% }) %>
+                                            <% } else { %>
+                                                <div class="col-lg-6">
+                                                    <div class="card mb-3 mb-lg-0">
+                                                        <div class="card-header">
+                                                            <h5 class="mb-0">Billing Address</h5>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <p>No address available.</p>
+                                                            <a href="/add-address" class="btn btn-primary mt-3">Add Address</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <% } %>  
+                                            <a href="/add-address" class="btn btn-primary mt-3">Add Address</a>                                          
+                                        </div>
+                                    </div>                                                             
+                                    <div class="tab-pane fade" id="account-detail" role="tabpanel" aria-labelledby="account-detail-tab">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5>Account Details</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <p>Already have an account? <a href="page-login-register.html">Log in instead!</a></p>
+                                                <% if (successmessage) { %>
+                                                    <div class="alert alert-success">
+                                                        <%= successmessage %>
+                                                    </div>
+                                                <% } %>
+                                                <form id="userProfileForm" onsubmit="return validateForm(event);" method="post" action="/userprofile?id=<%= user._id %>">
+                                                    <div class="row">
+                                                        <div class="form-group col-md-6">
+                                                            <label>Name <span class="required">*</span></label>
+                                                            <input required="" class="form-control square" name="name" type="text" value="<%=user.username %>">
+                                                            <div id="nameError" class="text-danger"></div>
+                                                        </div>
+                                                        <div class="form-group col-md-12">
+                                                            <label>Email <span class="required">*</span></label>
+                                                            <input required="" class="form-control square" name="email" value="<%=user.email%>">
+                                                            <div id="emailError" class="text-danger"></div>
+                                                        </div>
+                                                        <div class="form-group col-md-12">
+                                                            <label>Phone no. <span class="required">*</span></label>
+                                                            <input required="" class="form-control square" name="phone" type="text" value="<%=user.phone%>">
+                                                            <div id="phoneError" class="text-danger"></div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <button type="submit" class="btn btn-fill-out submit-button" name="submitbutton" value="Submit">Save</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+<script>
+    function validateForm(event) {
+        event.preventDefault();
+    
+        // Reset error messages
+        document.getElementById('nameError').innerText = '';
+        document.getElementById('emailError').innerText = '';
+        document.getElementById('phoneError').innerText = '';
+    
+        const name = document.querySelector('input[name="name"]').value;
+        const email = document.querySelector('input[name="email"]').value;
+        const phone = document.querySelector('input[name="phone"]').value;
+    
+        let isValid = true;
+    
+        if (!name || name.length < 2) {
+            document.getElementById('nameError').innerText = 'Name must be at least two characters long';
+            isValid = false;
+        }
+    
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !emailPattern.test(email)) {
+            document.getElementById('emailError').innerText = 'Please enter a valid email address.';
+            isValid = false;
+        }
+    
+        const phonePattern = /^\+?[0-9\s]{7,15}$/;
+        if (!phone || !phonePattern.test(phone)) {
+            document.getElementById('phoneError').innerText = 'Please enter a valid phone number.';
+            isValid = false;
+        }
+    
+        if (isValid) {
+            document.getElementById('userProfileForm').submit();
+        }
+    }
+</script>
+    
+<%- include('../partials/user/footer') %> 

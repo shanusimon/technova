@@ -17,6 +17,17 @@
             display: block;
             margin-top: 5px;
         }
+        .forgot-password-link{
+            font-size: 0.875rem;
+            color:#007bff;
+            text-decoration: none;
+        }
+        .forgot-password-link:hover{
+            color:#007bff;
+            text-decoration: underline;
+
+        }
+
     </style>
 </head>
 
@@ -54,6 +65,10 @@
                             </form>
                             <div class="divider-text-center mt-15 mb-15">
                                 <span>or</span>
+                            </div>
+                            <div class="form-group d-flex justify-content-end">
+                                <a href="/forgot-password" class="forgot-password-link ms-auto">forget password</a>
+
                             </div>
                             <ul class="btn-login list_none text-center mb-15">
                                 <li><a href="/auth/google" class="btn btn-google hover-up">Login With Google</a></li>

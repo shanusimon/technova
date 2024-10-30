@@ -1,36 +1,87 @@
 const User = require("../../models/userSchema");
 const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
+const Address = require("../../models/addressSchema");
+const Banner = require("../../models/bannerSchema");
 const nodemailer = require("nodemailer");
 const env = require("dotenv").config();
 const bcrypt = require("bcrypt");
+const { get } = require("../../routes/userRouter");
+const Order = require("../../models/orderSchema");
+
 
 
 const loadHomepage = async (req,res) => {
     try {
+        const today = new Date().toISOString();
         const user = req.session.user;
+        const banner = await Banner.find({
+            startDate:{$lt:new Date(today)},
+            endDate:{$gt:new Date(today)}
+        })
         const categories = await Category.find({isListed:true});
         let productData = await Product.find({isBlocked:false,
             category:{$in:categories.map(category=>category._id)},quantity:{$gt:0}
         });
         productData.sort((a,b)=>new Date(b.createdOn)-new Date(a.createdOn));
-        productData = productData.slice(0,4);
+        productData = productData.slice(0);
 
-
+        console.log(banner)
         if(user){
             const userData = await User.findOne({_id:user._id});
             res.render("home",{
                 user:userData,
-                products:productData
+                products:productData,
+                banner:banner || []
             })
         }else{
             return res.render("home",{
-                products:productData
+                products:productData,
+                banner:banner || []
             });
         }
     } catch (error) {
         console.log("Home Page Not found",error.message);
         res.status(500).send("server error");
+    }
+}
+
+const sortProduct = async (req,res) => {
+    try {
+        const sortOption = req.query.sort || 'default';
+
+        let sortCriteria;
+
+        switch(sortOption){
+            case 'popularity':
+            sortCriteria = {popularity:-1};
+            break;
+            case 'price-low-high':
+            sortCriteria = {salePrice:1};
+            break;
+            case 'price-high-high':
+            sortCriteria = {salePrice:-1};
+            break;
+            case 'rating':
+            sortCriteria = {rating:-1};
+            break;
+            case 'new-arrivals':
+            sortCriteria = {createdAt:-1};
+            break;
+            case 'alphabetical-a-z':
+            sortCriteria = {productName:1};
+            break;
+            case 'alphabetical-z-a':
+            sortCriteria = {productName:-1};
+            break;
+            default:
+                sortCriteria ={createdAt:-1};
+        }
+
+        const products = await Product.find().sort(sortCriteria)
+        res.json({products})
+    } catch (error) {
+        
     }
 }
 
@@ -194,6 +245,7 @@ const loadlogin = async (req,res) => {
     }
     
 }
+
 const login = async (req,res) => {
     try {
         const {email,password} = req.body;
@@ -232,6 +284,7 @@ const logout = async (req,res) => {
         res.redirect('/pageNotFound');
     }
 }
+
 const viewProduct = async (req,res) => {
     try {
         const productID = req.query.id;
@@ -239,16 +292,186 @@ const viewProduct = async (req,res) => {
         const category = await Category.findOne({_id:productData.category}) 
         res.render("productview-page",{
             product:productData,
-            category:category
+            cat:category
         })
+    } catch (error) {
+        
+    }    
+}
+
+const getuserprofile = async (req,res) => {
+    try {
+        const userId = req.session.user._id;
+        const user = await User.findById(userId);
+        const addressDoc = await Address.findOne({userId});
+        const orders = await Order.find({ user: userId })
+        .populate('orderedItems.product')
+        .populate('address')
+        .sort({ creaetedOn: -1 });
+
+
+
+            
+        if (!user) {
+            return res.redirect('/');
+        }
+
+        const successmessage = req.query.success === 'true' ?"Profile updated SuccessFully":null;
+        const addresses = addressDoc ? addressDoc.addresses : []; 
+
+        res.render('userprofile',{
+            user:user,
+            successmessage:successmessage,
+            addresses:addresses,
+            orders:orders
+        });
+
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        res.status(500).send('Server error');
+    }
+    
+}
+
+const saveUserData = async (req,res) => {
+    try {
+        const {name,email,phone} = req.body;
+        const userId = req.query.id;
+        await User.findOneAndUpdate({_id:userId},{username:name,email:email,phone:phone},{new:true});
+        res.redirect(`/userprofile?id=${userId}&success=true`);
+    } catch (error) {
+        console.error('Error saving user data:', error);
+        res.status(500).send('Server error');
+    }
+    
+}
+
+const getAddAddress = async (req,res) => {
+    try {
+        const user = req.session.user;
+        if(!user){
+            res.render('login')
+        }else{
+            res.render("add-address",{user})
+        }
+    
     } catch (error) {
         
     }
 
     
-    
+}
+const saveAddress = async (req, res) => {
+    try {
+        const userId = req.query.id;
+        const { addressType, name, city, landMark, state, pincode, phone, altPhone } = req.body;
+        
+        const newAddress = {
+            addressType,
+            name,
+            city,
+            landMark,
+            state,
+            pincode,
+            phone,
+            altPhone
+        };
+
+        let userAddress = await Address.findOne({ userId });
+
+        if (userAddress) {
+            userAddress.addresses.push(newAddress);
+            await userAddress.save();
+        } else {
+            userAddress = new Address({
+                userId,
+                addresses: [newAddress],
+            });
+            await userAddress.save();
+        }
+
+        res.redirect("/add-address");
+
+    } catch (error) {
+        console.error("Error saving address:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error saving address",
+            error: error.message
+        });
+    }
+};
+
+const deleteAddress = async (req, res) => {
+    try {
+        const userId = req.session.user._id;
+        const addressId = req.query.id; 
+
+        if (!addressId) {
+            console.error("No address ID provided in request");
+            return res.status(400).send("Address ID is required");
+        }
+
+
+        const updatedAddress = await Address.findOneAndUpdate(
+            { userId: userId },
+            { $pull: { addresses: { _id: addressId } } },
+            { new: true }
+        );
+
+        if (!updatedAddress) {
+            console.error("Address not found or already deleted");
+            return res.status(404).send("Address not found");
+        }
+        res.redirect('/userprofile');
+    } catch (error) {
+        console.error("Error deleting address:", error);
+        res.status(500).send("Error deleting address");
+    }
+};
+const orderProductDetails = async (req, res) => {
+    try {
+        const orderId = req.query.id;
+        const order = await Order.findById(orderId)
+            .populate({
+                path: 'orderedItems.product',  // Make sure this matches your schema
+                model: 'Product',              // Explicitly specify the model
+                select: 'productName productImage salePrice' 
+            })
+            .populate('address'); 
+            
+        if (!order) {
+            return res.status(404).render('error', { message: 'Order not found' });
+        }
+
+        console.log('Populated order:', order);
+        res.render('order-details', {
+            order: order
+        });
+
+    } catch (error) {
+        console.log("Order Product Details Error:", error.message);
+        res.status(500).render('error', { message: 'Error fetching order details' });
+    }
 }
 
+const getForgotPassPage = async (req,res) => {
+    try {
+        res.render("forgot-password");
+        
+    } catch (error) {
+        res.render("page-404")
+    }
+}
+
+const forgetEmailValid = async (req,res) => {
+    try {
+        
+    } catch (error) {
+        
+    }
+    
+}
 module.exports ={
     loadHomepage,
     pageNotfound,
@@ -259,6 +482,15 @@ module.exports ={
     loadlogin,
     login,
     logout,
-    viewProduct
+    viewProduct,
+    getuserprofile,
+    saveUserData,
+    getAddAddress,
+    saveAddress,
+    deleteAddress,
+    orderProductDetails,
+    sortProduct,
+    getForgotPassPage,
+    forgetEmailValid
 }
     

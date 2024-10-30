@@ -252,12 +252,14 @@ const deleteSingleImage = async (req, res) => {
         // console.log("Deleting image...");
 
         // console.log(req.body);
-        const { imageNameToServer, productIdToServer } = req.body;
-
+        const { imageNameToServer, productId } = req.body;
+        console.log(imageNameToServer,productId);
         const product = await Product.findByIdAndUpdate(
-            productIdToServer,
-            { $pull: { productImage: imageNameToServer } }
+            productId,
+            { $pull: { productImage: imageNameToServer } },
+            {new:true}
         );
+
 
         const imagePath = path.join("public", "uploads", "re-image", imageNameToServer);
         console.log("Image Path: ", imagePath);

@@ -9,8 +9,13 @@ const orderSchema = new Schema({
         default:()=>uuidv4(),
         unique:true
     },
+    user:{
+        type:Schema.Types.ObjectId,
+        ref:"User",
+        require:true
+    },
     orderedItems:[{
-        Product:{
+        product:{
             type:Schema.Types.ObjectId,
             ref:"Product",
             require:true
@@ -38,7 +43,7 @@ const orderSchema = new Schema({
     },
     address:{
         type:Schema.Types.ObjectId,
-        ref:"User",
+        ref:"Address",
         required:true
     },
     invoiceDate:{
@@ -49,7 +54,7 @@ const orderSchema = new Schema({
         required:true,
         enum:["Pending","Processing","Shipped","Delivered","Cancelled","Return Request","Returned"]
     },
-    creaetedOn:{
+    createdOn:{
         type:Date,
         default:Date.now,
         required:true
@@ -57,7 +62,7 @@ const orderSchema = new Schema({
     couponApplied:{
         type:Boolean,
         default:false
-    }
+    },
 })
 
 const Order = mongoose.model("Order",orderSchema);

@@ -1,0 +1,174 @@
+<%- include('../partials/user/header') %>
+
+<style>
+    .small-radio {
+        transform: scale(0.4);
+        margin-right: 10px;
+        cursor: pointer;
+    }
+</style>
+
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="/" rel="nofollow">Home</a>
+                    <span></span> Shop
+                    <span></span> Checkout
+                </div>
+            </div>
+        </div>
+        <section class="mt-50 mb-50">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <!-- Address Selection -->
+                        <h4>Select Your Address</h4>
+                        <% if (address.length> 0) { %>
+                            <% address.forEach((addr, i)=> { %>
+                                <div class="card">
+                                    <input type="radio" name="selectedAddress" id="address-<%= i %>"
+                                        value="<%= JSON.stringify(addr) %>" required style="transform: scale(0.4);"
+                                        onchange="document.getElementById('addressId').value = '<%= addr._id %>';">
+                                    <label for="address-<%= i %>">
+                                        <div class="card-body">
+                                            <strong>
+                                                <%= addr.addressType %>
+                                            </strong><br>
+                                            <%= addr.name %><br>
+                                                <%= addr.streetAddress %><br>
+                                                    <%= addr.city %>, <%= addr.state %><br>
+                                                            <%= addr.pincode %><br>
+                                                                <%= addr.phone %>
+                                                                    <% if (addr.altPhone) { %>&nbsp; | &nbsp; <%=
+                                                                            addr.altPhone %>
+                                                                            <% } %>
+                                        </div>
+                                    </label>
+                                </div>
+                                <% }); %>
+                                    <% } else { %>
+                                        <p>No addresses available.</p>
+                                        <% } %>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="order_review">
+                            <h4>Your Orders</h4>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th colspan="2">Product</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (product) { %>
+                                        <tr>
+                                            <td class="image product-thumbnail"><img
+                                                    src="/uploads/re-image/<%= product.productImage[0] %>"
+                                                    alt="<%= product.productName %>"></td>
+                                            <td>
+                                                <h5>
+                                                    <%= product.productName %>
+                                                </h5>
+                                                <span>Units: 1</span>
+                                            </td>
+                                            <td>
+                                                <%= product.salePrice.toLocaleString() %>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>SubTotal</th>
+                                            <td colspan="2">
+                                                <%= totalPrice.toLocaleString() %>
+                                            </td>
+                                        </tr>
+                                        <% } else if (cart && cart.items.length> 0) { %>
+                                            <!-- Cart Items Case -->
+                                            <% cart.items.forEach(item=> { %>
+                                                <tr>
+                                                    <td class="image product-thumbnail"><img
+                                                            src="/uploads/re-image/<%= item.productId.productImage[0] %>"
+                                                            alt="<%= item.productId.productName %>"></td>
+                                                    <td>
+                                                        <h5>
+                                                            <%= item.productId.productName %>
+                                                        </h5>
+                                                        <span>Units: <%= item.quantity %></span>
+                                                    </td>
+                                                    <td>
+                                                        <%= item.totalPrice.toLocaleString() %>
+                                                    </td>
+                                                </tr>
+                                                <% }); %>
+                                                    <tr>
+                                                        <th>SubTotal</th>
+                                                        <td colspan="2">
+                                                            <%= totalPrice.toLocaleString() %>
+                                                        </td>
+                                                    </tr>
+                                                    <% } else { %>
+                                                        <tr>
+                                                            <td colspan="3">No items in cart or product selection.</td>
+                                                        </tr>
+                                                        <% } %>
+                                </tbody>
+                            </table>
+
+                            <form id="orderForm" method="POST" action="/place-order"
+                                onsubmit="return validateAddress()">
+                                <div>
+                                    <h4>Select Payment Method</h4><br>
+                                    <div class="payment_option">
+                                        <div class="custome-radio">
+                                            <input class="form-check-input" required="" type="radio" name="payment_option" id="exampleRadios3" checked="">
+                                            <label class="form-check-label" for="exampleRadios3" data-bs-toggle="collapse" data-target="#COD" aria-controls="bankTranfer">COD</label>
+                                            
+                                        </div>
+                                        
+                                        <div class="custome-radio">
+                                            <input class="form-check-input" required="" type="radio" name="payment_option" id="exampleRadios5" checked="">
+                                            <label class="form-check-label" for="exampleRadios5" data-bs-toggle="collapse" data-target="#paypal" aria-controls="paypal">Paypal</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+                                
+                                <input type="hidden" name="cart" value='<%= JSON.stringify(cart ? cart.items : []) %>'>
+
+                                <input type="hidden" name="totalPrice" value="<%= totalPrice %>">
+                                <% if (product) { %>
+                                    <input type="hidden" name="singleProduct" value="<%= JSON.stringify(product) %>">
+                                    <% } %>
+                                        <input type="hidden" name="addressId" id="addressId">
+                                        <button type="submit" class="btn btn-fill-out btn-block mt-30">Place
+                                            Order</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <%- include('../partials/user/footer') %>
+
+<script>
+            function validateAddress() {
+                const addressRadioButtons = document.querySelectorAll('input[name="selectedAddress"]');
+                let addressSelected = false;
+
+                addressRadioButtons.forEach((radio) => {
+                    if (radio.checked) {
+                        addressSelected = true;
+                    }
+                });
+
+                if (!addressSelected) {
+                    alert('Please select an address before proceeding.');
+                    return false;
+                }
+                return true;
+            }
+</script>
