@@ -26,7 +26,6 @@ const loadHomepage = async (req,res) => {
         productData.sort((a,b)=>new Date(b.createdOn)-new Date(a.createdOn));
         productData = productData.slice(0);
 
-        console.log(banner)
         if(user){
             const userData = await User.findOne({_id:user._id});
             res.render("home",{
@@ -59,7 +58,7 @@ const sortProduct = async (req,res) => {
             case 'price-low-high':
             sortCriteria = {salePrice:1};
             break;
-            case 'price-high-high':
+            case 'price-high-low':
             sortCriteria = {salePrice:-1};
             break;
             case 'rating':
@@ -233,6 +232,7 @@ const resendOtp = async (req, res) => {
     }
 };
 
+
 const loadlogin = async (req,res) => {
     try {
         if(!req.session.user){
@@ -245,6 +245,7 @@ const loadlogin = async (req,res) => {
     }
     
 }
+
 
 const login = async (req,res) => {
     try {
@@ -269,21 +270,17 @@ const login = async (req,res) => {
     }
 }
 
+
 const logout = async (req,res) => {
     try {
-        req.session.destroy((err)=>{
-            if(err){
-                console.log("Session destroy Error",err)
-                return res.redirect("/pageNotFound")
-            }else{
-                res.redirect("/login")
-            }
-        })
+        req.session.user = null;
+        res.redirect('/login');
     } catch (error) {
         console.log("Log out Error",error);
         res.redirect('/pageNotFound');
     }
 }
+
 
 const viewProduct = async (req,res) => {
     try {
@@ -299,32 +296,34 @@ const viewProduct = async (req,res) => {
     }    
 }
 
+
 const getuserprofile = async (req,res) => {
     try {
-        const userId = req.session.user._id;
-        const user = await User.findById(userId);
-        const addressDoc = await Address.findOne({userId});
-        const orders = await Order.find({ user: userId })
-        .populate('orderedItems.product')
-        .populate('address')
-        .sort({ creaetedOn: -1 });
-
-
-
-            
-        if (!user) {
-            return res.redirect('/');
+        if(req.session.user){
+            const userId = req.session.user._id;
+            const user = await User.findById(userId);
+            const addressDoc = await Address.findOne({userId});
+            const orders = await Order.find({ user: userId })
+            .populate('orderedItems.product')
+            .populate('address')
+            .sort({ creaetedOn: -1 });
+   
+            if (!user) {
+                return res.redirect('/');
+            }
+    
+            const successmessage = req.query.success === 'true' ?"Profile updated SuccessFully":null;
+            const addresses = addressDoc ? addressDoc.addresses : []; 
+    
+            res.render('userprofile',{
+                user:user,
+                successmessage:successmessage,
+                addresses:addresses,
+                orders:orders
+            });
+        }else{
+            res.redirect('/')
         }
-
-        const successmessage = req.query.success === 'true' ?"Profile updated SuccessFully":null;
-        const addresses = addressDoc ? addressDoc.addresses : []; 
-
-        res.render('userprofile',{
-            user:user,
-            successmessage:successmessage,
-            addresses:addresses,
-            orders:orders
-        });
 
     } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -333,11 +332,12 @@ const getuserprofile = async (req,res) => {
     
 }
 
+
 const saveUserData = async (req,res) => {
     try {
-        const {name,email,phone} = req.body;
+        const {name,phone} = req.body;
         const userId = req.query.id;
-        await User.findOneAndUpdate({_id:userId},{username:name,email:email,phone:phone},{new:true});
+        await User.findOneAndUpdate({_id:userId},{username:name,phone:phone},{new:true});
         res.redirect(`/userprofile?id=${userId}&success=true`);
     } catch (error) {
         console.error('Error saving user data:', error);
@@ -345,6 +345,7 @@ const saveUserData = async (req,res) => {
     }
     
 }
+
 
 const getAddAddress = async (req,res) => {
     try {
@@ -358,49 +359,55 @@ const getAddAddress = async (req,res) => {
     } catch (error) {
         
     }
-
-    
 }
-const saveAddress = async (req, res) => {
+
+
+const saveEditAddress = async (req, res) => {
     try {
-        const userId = req.query.id;
+        const userId = req.session.user;
+        const { addressId } = req.body;
         const { addressType, name, city, landMark, state, pincode, phone, altPhone } = req.body;
-        
-        const newAddress = {
+
+        const updatedAddress = {
             addressType,
             name,
+            state,
             city,
             landMark,
-            state,
             pincode,
             phone,
-            altPhone
+            altPhone,
         };
 
-        let userAddress = await Address.findOne({ userId });
+        let addressDoc = await Address.findOne({ userId: userId });
 
-        if (userAddress) {
-            userAddress.addresses.push(newAddress);
-            await userAddress.save();
+        if (addressDoc) {
+            if (addressId) {
+                const addressIndex = addressDoc.addresses.findIndex(addr => addr._id.toString() === addressId);
+                if (addressIndex !== -1) {
+                    addressDoc.addresses[addressIndex] = { ...addressDoc.addresses[addressIndex], ...updatedAddress };
+                } else {
+                    return res.status(404).json({ message: "Address not found" });
+                }
+            } else {
+                addressDoc.addresses.push(updatedAddress);
+            }
+            await addressDoc.save();
+            res.status(200).json({ message: "Address saved successfully", address: addressDoc });
         } else {
-            userAddress = new Address({
-                userId,
-                addresses: [newAddress],
+            addressDoc = new Address({
+                userId: userId,
+                addresses: [updatedAddress],
             });
-            await userAddress.save();
+            await addressDoc.save();
+            res.status(201).json({ message: "Address saved successfully", address: addressDoc });
         }
-
-        res.redirect("/add-address");
-
     } catch (error) {
-        console.error("Error saving address:", error);
-        res.status(500).json({
-            success: false,
-            message: "Error saving address",
-            error: error.message
-        });
+        console.error(error);
+        res.status(500).json({ message: "Error saving address" });
     }
 };
+
 
 const deleteAddress = async (req, res) => {
     try {
@@ -429,13 +436,14 @@ const deleteAddress = async (req, res) => {
         res.status(500).send("Error deleting address");
     }
 };
+
 const orderProductDetails = async (req, res) => {
     try {
         const orderId = req.query.id;
         const order = await Order.findById(orderId)
             .populate({
-                path: 'orderedItems.product',  // Make sure this matches your schema
-                model: 'Product',              // Explicitly specify the model
+                path: 'orderedItems.product',  
+                model: 'Product',              
                 select: 'productName productImage salePrice' 
             })
             .populate('address'); 
@@ -444,7 +452,6 @@ const orderProductDetails = async (req, res) => {
             return res.status(404).render('error', { message: 'Order not found' });
         }
 
-        console.log('Populated order:', order);
         res.render('order-details', {
             order: order
         });
@@ -455,23 +462,80 @@ const orderProductDetails = async (req, res) => {
     }
 }
 
-const getForgotPassPage = async (req,res) => {
+const cancelOrder = async (req,res) => {
     try {
-        res.render("forgot-password");
-        
+        const orderId = req.query.id;
+        await Order.findByIdAndUpdate(orderId,{status:"Cancelled"});
+        res.redirect("/userprofile");
     } catch (error) {
-        res.render("page-404")
-    }
-}
-
-const forgetEmailValid = async (req,res) => {
-    try {
-        
-    } catch (error) {
-        
+        console.log("Error in canceling order");
+        res.redirect('pagenotFound')
     }
     
 }
+
+const getEditAddress = async (req,res) => {
+    try {
+        const addressId = req.query.id;
+        const userId = req.session.user._id;
+        if(!userId){
+            res.redirect('/login');
+        }
+        const addressDoc = await Address.findOne({userId:userId});
+        if(addressDoc){
+        const  address = addressDoc.addresses.find(addr=>addr._id.toString()===addressId);
+            if(address){
+                res.render('edit-address',{
+                    address
+                })
+            }else{
+                res.status(404).send("Address Not Found");
+            }
+        }else{
+            res.status(404).send("Address Not Found");
+        }
+    } catch (error) {
+        console.log("Error rendering on Edit address page",error);
+        res.redirect("/pagenotFound");
+    }
+    
+}
+
+const saveAddress = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const { addressType, name, city, landMark, state, pincode, phone, altPhone } = req.body;
+
+        const newAddress = {
+            addressType,
+            name,
+            state,
+            city,
+            landMark,
+            pincode,
+            phone,
+            altPhone,
+        };
+        let addressDoc = await Address.findOne({ userId: userId });
+
+        if (addressDoc) {
+            addressDoc.addresses.push(newAddress);
+            await addressDoc.save();
+        } else {
+            addressDoc = new Address({
+                userId: userId,
+                addresses: [newAddress],
+            });
+            await addressDoc.save();
+        }
+        res.redirect('/userprofile');
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error saving address" });
+    }
+};
+
+
 module.exports ={
     loadHomepage,
     pageNotfound,
@@ -490,7 +554,8 @@ module.exports ={
     deleteAddress,
     orderProductDetails,
     sortProduct,
-    getForgotPassPage,
-    forgetEmailValid
+    cancelOrder,
+    getEditAddress,
+    saveEditAddress
 }
     

@@ -8,6 +8,7 @@ const brandController = require("../controllers/admin/brandController");
 const productController = require("../controllers/admin/productController");
 const bannerController = require("../controllers/admin/bannerController");
 const orderController = require("../controllers/admin/orderController");
+const stockController = require("../controllers/admin/stockController");
 const multer = require("multer");
 const storage = require("../helpers/multer");
 const uploads = multer({storage:storage});
@@ -61,9 +62,8 @@ router.get('/deleteBanner',adminAuth,bannerController.deleteBanner);
 //order managment 
 router.get("/orders",adminAuth,orderController.getOrderList);
 router.post('/update-status/:id',adminAuth,orderController.updateStatus);
-
-
-
-
+//stock managment
+router.get('/stock',adminAuth,stockController.getStockPage);
+router.post('/update-stock',adminAuth,stockController.updateStock);
 
 module.exports = router;

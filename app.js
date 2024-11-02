@@ -45,9 +45,13 @@ app.set("views", [
     path.join(__dirname, 'views/admin')
 ]);
 
+
+
 // Route definitions
 app.use("/", userRouter);
 app.use('/admin', adminRouter);
+
+
 
 // Start the server
 app.listen(process.env.PORT, () => {

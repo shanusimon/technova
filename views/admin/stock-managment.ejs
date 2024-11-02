@@ -1,0 +1,101 @@
+<%- include("../../views/partials/admin/header") %>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
+</head>
+
+<div class="content-header">
+    <div>
+        <h2 class="content-title card-title">Stock Management</h2>
+    </div>
+</div>
+<header class="card-header text-center mb-20">
+    <form action="" method="get" class="d-inline">
+        <div class="input-group input-group-sm border border-1 border-grey rounded-pill" style="width: 500px; margin-left: 230px;">
+            <input type="text" class="form-control border-0 rounded-pill" placeholder="Search products by name or category" name="search">
+            <button class="btn border-0" type="submit">Search</button>
+        </div>
+    </form>
+</header>
+<div class="right mt-5">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col"><b>Product ID</b></th>
+                <th scope="col"><b>Product Name</b></th>
+                <th scope="col"><b>Category</b></th>
+                <th scope="col"><b>Current Stock</b></th>
+                <th scope="col"><b>Update Stock</b></th>
+                <th scope="col"><b>Action</b></th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for (let i = 0; i < data.length; i++) { %>
+                <tr>
+                    <td><%= data[i]._id %></td>
+                    <td><%= data[i].productName %></td>
+                    <td><%= data[i].category.name %></td> 
+                    <td><%= data[i].quantity %></td> 
+                    <td>
+                        <input type="number" class="form-control" id="updateStock_<%= data[i]._id %>" placeholder="Enter new stock" min="0">
+                    </td>
+                    <td>
+                        <button class="btn btn-primary" onclick="updateStock('<%= data[i]._id %>')">Update</button>
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+    <br>
+    
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
+<script>
+    function updateStock(productId){
+        const newStock = document.getElementById(`updateStock_${productId}`).value;
+
+        fetch('/admin/update-stock',{
+            method:"POST",
+            headers:{
+                'Content-Type':'application/json',
+            },
+            body:JSON.stringify({productId,newStock})
+        })
+        .then(response=>response.json())
+        .then(data=>{
+            if(data.success){
+                Swal.fire({
+                    icon:'success',
+                    title:'Stock updated',
+                    text:"The Stock has been updated Successfully",
+                    confirmButtonColor:'#3085d6',
+                    confirmButtonText:'OK'
+                }).then(result=>{
+                    if(result.isConfirmed){
+                        location.reload();
+                    }
+                });
+            }else{
+                Swal.fire({
+                    icon:'error',
+                    title:'Stock Updated Failed',
+                    text:'There was a problem updating the Stock.please try Again',
+                    confirmButtonColor:'#d33',
+                    confirmButtonText:'Close'
+                })
+            }
+        })
+        .catch(error=>{
+            console.log("Error Updating Stock:",error);
+            Swal.fire({
+                    icon:'error',
+                    title:'Stock Updated Failed',
+                    text:'There was a problem updating the Stock.please try Again',
+                    confirmButtonColor:'#d33',
+                    confirmButtonText:'Close'
+                })
+        })
+    }
+</script>
+<%- include("../../views/partials/admin/footer") %>

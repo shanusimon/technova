@@ -1,3 +1,4 @@
+
 <%- include('../partials/user/header') %> 
     <main class="main">
         <div class="page-header breadcrumb-wrap">
@@ -33,7 +34,7 @@
                                             <a class="nav-link" id="account-detail-tab" data-bs-toggle="tab" href="#account-detail" role="tab" aria-controls="account-detail" aria-selected="true"><i class="fi-rs-user mr-10"></i>Account details</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="page-login-register.html"><i class="fi-rs-sign-out mr-10"></i>Logout</a>
+                                            <a class="nav-link" href="/logout"><i class="fi-rs-sign-out mr-10"></i>Logout</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -77,6 +78,9 @@
                                                                         <td>₹<%= order.finalAmount %> for <%= order.orderedItems.length %> item(s)</td>
                                                                         <td>
                                                                             <a href="/order-details?id=<%= order._id %>" class="btn-small d-block">View</a>
+                                                                            <% if(order.status != "Cancelled") {%>
+                                                                            <a class="btn btn-primary btn-sm" href="/order-cancel?id=<%= order._id %>">Cancel Order</a>
+                                                                            <% } %>
                                                                         </td>
                                                                     </tr>
                                                                 <% }); %>
@@ -133,9 +137,11 @@
                                                                 <p><strong>State:</strong> <%= address.state %></p>
                                                                 <p><strong>Pincode:</strong> <%= address.pincode %></p>
                                                                 <p><strong>Phone:</strong> <%= address.phone %></p>
-                                                                <p><strong>Alternate Phone:</strong> <%= address.althone %></p>
+                                                                <p><strong>Alternate Phone:</strong> <%= address.altPhone %></p>
                                                                 <!-- <a href="/edit-address/<%= address._id %>" class="btn-small">Edit</a> -->
                                                                 <a href="/delete-address/?id=<%= address._id %>" class="btn-small">Delete</a>
+                                                                <br>
+                                                                <a href="/edit-address/?id=<%= address._id %>" class="btn-small">Edit</a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -177,9 +183,9 @@
                                                         </div>
                                                         <div class="form-group col-md-12">
                                                             <label>Email <span class="required">*</span></label>
-                                                            <input required="" class="form-control square" name="email" value="<%=user.email%>">
+                                                            <input required="" class="form-control square" name="email" value="<%=user.email%>" readonly>
                                                             <div id="emailError" class="text-danger"></div>
-                                                        </div>
+                                                        </div>                                                        
                                                         <div class="form-group col-md-12">
                                                             <label>Phone no. <span class="required">*</span></label>
                                                             <input required="" class="form-control square" name="phone" type="text" value="<%=user.phone%>">
@@ -204,8 +210,7 @@
 <script>
     function validateForm(event) {
         event.preventDefault();
-    
-        // Reset error messages
+ 
         document.getElementById('nameError').innerText = '';
         document.getElementById('emailError').innerText = '';
         document.getElementById('phoneError').innerText = '';

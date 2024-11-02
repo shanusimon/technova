@@ -14,6 +14,8 @@
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="evara-frontend/assets/imgs/theme/favicon.svg">
     <!-- Template CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="evara-frontend/assets/css/main.css">
    
     
@@ -30,7 +32,6 @@
                         <div class="col-md-6 col-sm-12 col-xs-12">
                             <div class="detail-gallery">
                                 <span class="zoom-icon"><i class="fi-rs-search"></i></span>
-                                <!-- MAIN SLIDES -->
                                 <div class="product-image-slider">
                                     <figure class="border-radius-10">
                                         <img src="evara-frontend/assets/imgs/shop/product-16-2.jpg" alt="product image">
@@ -54,7 +55,6 @@
                                         <img src="evara-frontend/assets/imgs/shop/product-16-7.jpg" alt="product image">
                                     </figure>
                                 </div>
-                                <!-- THUMBNAILS -->
                                 <div class="slider-nav-thumbnails pl-15 pr-15">
                                     <div><img src="evara-frontend/assets/imgs/shop/thumbnail-3.jpg" alt="product image"></div>
                                     <div><img src="evara-frontend/assets/imgs/shop/thumbnail-4.jpg" alt="product image"></div>
@@ -65,7 +65,6 @@
                                     <div><img src="evara-frontend/assets/imgs/shop/thumbnail-9.jpg" alt="product image"></div>
                                 </div>
                             </div>
-                            <!-- End Gallery -->
                             <div class="social-icons single-share">
                                 <ul class="text-grey-5 d-inline-block">
                                     <li><strong class="mr-10">Share this:</strong></li>
@@ -178,9 +177,12 @@
         <div class="header-middle header-middle-ptb-1 d-none d-lg-block">
             <div class="container">
                 <div class="header-wrap">
-                    <div class="logo logo-width-1">
-                        <a href="index.html"><img src="evara-frontend/assets/imgs/theme/mobile-king.png" alt="logo"></a>
-                    </div>
+                    <div class="logo logo-width-1 container">
+                        <a href="index.html">
+                            <img src="evara-frontend/assets/imgs/theme/tech-nova.png" alt="logo" 
+                                 style="width: 50px; height: 50px; border-radius: 60%; object-fit: cover;">
+                        </a>
+                    </div>                    
                     <div class="header-right">
                         <div class="search-style-2">
                             <form action="#">

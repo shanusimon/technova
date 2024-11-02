@@ -55,6 +55,31 @@
         .fadeInUp {
             animation-name: fadeInUp;
         }
+        .product-content-wrap {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            background-color: #f9f9f9;
+        }
+
+        .product-content-wrap h6 {
+            margin: 5px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .product-content-wrap h6:nth-child(2) {
+            color: #ff5722; /* Accent color for price */
+            font-weight: bold;
+        }
+
+        .product-content-wrap h6:last-child {
+            color: green;
+            margin-top: 5px;
+        }
+
     </style>
 </head>
 
@@ -113,7 +138,6 @@
             </div>
         </div>
     </header>
-    
     <main class="main">       
         <section class="home-slider position-relative pt-50">
             <% if (banner && banner.length > 0) { %>
@@ -192,6 +216,7 @@
                                     <div class="product-content-wrap">
                                         <h6><%= products[i].productName %></h6>
                                         <h6>₹ <%= products[i].salePrice.toLocaleString() %></h6>
+                                        <h6 style="color:green">Stocks:<%=products[i].quantity%></h6>
                                     </div>
                                     <div class="product-action-1 show">
                                         <a aria-label="Add To Cart" class="action-btn hover-up" href="/addcart?id=<%= products[i]._id %>">
@@ -206,15 +231,7 @@
             </div>
         </section>
 
-        <footer class="main">
-            <section class="newsletter p-30 text-white wow fadeIn animated">
-                <div class="container">
-                    <div class="row align-items-center">
-                        <!-- Newsletter Signup Code Here -->
-                    </div>
-                </div>
-            </section>
-        </footer>
+        <%- include('../partials/user/footer') %>
 
         <script>
             function handleSortChange(){
@@ -226,12 +243,12 @@
                 .then(data => {
                     updateProductList(data.products);
                 })
-                .catch(error => console.log(error)); // Corrected typo here
+                .catch(error => console.log(error)); 
             }
 
             function updateProductList(products) {
                 const productsContainer = document.getElementById('products-container');
-                productsContainer.innerHTML = ''; // Clear the current product list
+                productsContainer.innerHTML = ''; 
 
                 products.forEach(product => {
                     const productElement = document.createElement('div');
@@ -260,7 +277,6 @@
             }
         </script>
         <script>
-            // Initialize the slider (assuming you're using Slick Slider)
             $(document).ready(function() {
                 $('.hero-slider-1').slick({
                     dots: true,

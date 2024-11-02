@@ -19,7 +19,7 @@ const getCart = async (req,res) => {
         res.render('cart',{cart:cart,products:cart.items,totalAmount});
 
     } catch (error) {
-        
+        console.log("Error on getting cart");
     }
     
 }
@@ -50,7 +50,6 @@ const saveToCart = async (req, res) => {
                 cartDoc.items[existingItemIndex].quantity += quantity;
                 cartDoc.items[existingItemIndex].totalPrice += totalPrice;
             } else {
-
                 cartDoc.items.push({ productId, quantity, price: product.salePrice, totalPrice });
             }
             await cartDoc.save();

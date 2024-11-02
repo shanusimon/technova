@@ -206,14 +206,14 @@
       }
 
       function resendotp() {
-        clearInterval(timerInterval); // Stop the previous timer
-        timer = 60; // Reset the timer correctly
-        document.getElementById("otp").disabled = false; // Enable OTP input again
+        clearInterval(timerInterval);
+        timer = 60; 
+        document.getElementById("otp").disabled = false;
         document.getElementById("timerValue").classList.remove("expired");
-        document.getElementById("timerValue").textContent = timer; // Reset the display value
-        startTimer(); // Start the timer again
+        document.getElementById("timerValue").textContent = timer;
+        startTimer();
 
-        // Send AJAX request to resend OTP
+
         $.ajax({
           type: "POST",
           url: "/resend-otp",
@@ -235,7 +235,7 @@
           },
         });
 
-        return false; // Prevent form submission
+        return false; 
       }
     </script>
   </body>

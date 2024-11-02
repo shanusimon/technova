@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.8/sweetalert2.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        .pt-150 {
+            padding-top: 150px;
+        }
+        .pb-150 {
+            padding-bottom: 150px;
+        }
+        .p-30 {
+            padding: 30px;
+        }
+        .mb-30 {
+            margin-bottom: 30px;
+        }
+        .background-white {
+            background: #fff;
+        }
+        .border-radius-5 {
+            border-radius: 5px;
+        }
+        .padding_eight_all {
+            padding: 8%;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .btn-fill-out {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #333;
+            padding: 10px 20px;
+        }
+        .btn-fill-out:hover {
+            background-color: #555;
+            border-color: #555;
+            color: #fff;
+        }
+        .widget-taber-content {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .heading_s1 h3 {
+            font-weight: 600;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<section class="pt-150 pb-150">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 m-auto">
+                <div class="address_wrap widget-taber-content p-30 background-white border-radius-5">
+                    <div class="padding_eight_all bg-white">
+                        <div class="heading_s1">
+                            <h3 class="mb-30">Edit Address</h3>
+                        </div>
+
+                        <form id="addressForm" method="post" action="/save-address">
+                            <input type="hidden" name="addressId" value="<%= address._id %>">
+                            <input type="hidden" name="userId" id="userId" value="<%= user._id %>">
+                            
+                            <div class="form-group">
+                                <label for="addressType">Address Type</label>
+                                <select id="addressType" name="addressType" class="form-control">
+                                    <option value="Home">Home</option>
+                                    <option value="Office">Office</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <span id="addressTypeErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" value="<%=address.name%>">
+                                <span id="nameErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="state">State</label>
+                                <input type="text" id="state" name="state" class="form-control" placeholder="Enter your state" value="<%=address.state%>">
+                                <span id="stateErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="city">City</label>
+                                <input type="text" id="city" name="city" class="form-control" placeholder="Enter your city" value="<%=address.city%>">
+                                <span id="cityErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="landMark">Landmark</label>
+                                <input type="text" id="landMark" name="landMark" class="form-control" placeholder="Enter a nearby landmark" value="<%=address.landMark%>">
+                                <span id="landMarkErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="pincode">Pincode</label>
+                                <input type="text" id="pincode" name="pincode" class="form-control" placeholder="Enter your pincode" value="<%=address.pincode%>">
+                                <span id="pincodeErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="text" id="phone" name="phone" class="form-control" placeholder="Enter your phone number" value="<%=address.phone%>">
+                                <span id="phoneErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="altPhone">Alternate Phone</label>
+                                <input type="text" id="altPhone" name="altPhone" class="form-control" placeholder="Enter your alternate phone number" value="<%=address.altPhone%>">
+                                <span id="altPhoneErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-fill-out btn-block hover-up w-100">Save Address</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+<!-- SweetAlert2 JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.8/sweetalert2.all.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#addressForm').submit(function (event) {
+            event.preventDefault();
+
+            if (!validateAddressForm()) {
+                return;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '/save-address',
+                data: $(this).serialize(),
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = '/userprofile';
+                    });
+                },
+                error: function (xhr) {
+                    const errorMessage = xhr.responseJSON?.message || 'There was an error saving the address.';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: errorMessage,
+                        confirmButtonText: 'Try Again'
+                    });
+                }
+            });
+        });
+    });
+
+    function validateAddressForm() {
+        const errorFields = [
+            'addressType', 'name', 'city', 'state', 
+            'pincode', 'phone', 'altPhone', 'landMark'
+        ];
+        errorFields.forEach(field => {
+            document.getElementById(field + 'Err').innerText = '';
+        });
+
+        let isValid = true;
+
+        const requiredFields = {
+            'name': 'Name',
+            'city': 'City',
+            'state': 'State',
+            'landMark': 'Landmark'
+        };
+
+        for (const [field, label] of Object.entries(requiredFields)) {
+            const value = document.getElementById(field).value;
+            if (value.trim() === '') {
+                document.getElementById(field + 'Err').innerText = `${label} is required.`;
+                isValid = false;
+            }
+        }
+
+
+        const pincode = document.getElementById('pincode').value;
+        if (pincode.trim() === '' || !/^\d{6}$/.test(pincode)) {
+            document.getElementById('pincodeErr').innerText = 'Pincode must be exactly 6 digits.';
+            isValid = false;
+        }
+
+
+        const phone = document.getElementById('phone').value;
+        if (phone.trim() === '' || !/^\d{10,}$/.test(phone)) {
+            document.getElementById('phoneErr').innerText = 'Phone number must be at least 10 digits.';
+            isValid = false;
+        }
+
+
+        const altPhone = document.getElementById('altPhone').value;
+        if (altPhone !== '' && !/^\d{10,}$/.test(altPhone)) {
+            document.getElementById('altPhoneErr').innerText = 'Alternate phone number must be at least 10 digits.';
+            isValid = false;
+        }
+
+        return isValid;
+    }
+</script>
+
+</body>
+</html>

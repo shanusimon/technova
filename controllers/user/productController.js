@@ -89,7 +89,8 @@ const placeOrder = async (req, res) => {
 }
 
 
+
 module.exports = { 
   getCheckOutPage,
-  placeOrder
+  placeOrder,
 };

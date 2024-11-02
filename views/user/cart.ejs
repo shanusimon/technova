@@ -166,6 +166,17 @@ function confirmRemove(productId) {
         }
 
 function updateQuantity(productId, change) {
+    const quantityElement = document.getElementById(`quantity-${productId}`);
+    const currentQuantity = parseInt(quantityElement.textContent);
+
+    if(currentQuantity + change < 1){
+        Swal.fire({
+            icon:"warning",
+            title:'Minimum Quantity Reached',
+            text:"The minimum quantity is 1"
+        });
+        return;
+    }
     fetch('/update-cart-quantity', {
         method: "POST",
         headers: {
@@ -176,7 +187,6 @@ function updateQuantity(productId, change) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Correctly interpolate the productId into the element IDs
                 document.getElementById(`quantity-${productId}`).textContent = data.newQuantity;
                 document.getElementById(`subtotal-${productId}`).textContent = `₹ ${data.newSubtotal.toLocaleString()}`;
                 document.getElementById("total-price").textContent = `₹ ${data.totalPrice.toLocaleString()}`;

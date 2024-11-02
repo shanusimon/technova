@@ -49,13 +49,8 @@ const loadDashboard = async (req,res) => {
 
 const logout = async (req,res) => {
     try {
-        req.session.destroy(err=>{
-            if(err){
-                console.log("Error in Destroying User Session",err);
-                return res.redirect("/pageerror")
-            }
-            res.redirect("/admin/login")
-        })
+        req.session.admin = null;
+        res.redirect('/admin/login')
     } catch (error) {
         console.log("unexpected error During Logout",error);
         res.send("HELLO WORLD")
