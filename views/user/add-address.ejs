@@ -1,5 +1,7 @@
-<%- include('../partials/user/header') %> 
-
+<%- include('../partials/user/header') %>
+<br>
+<br>
+<br>
 <div class="container mt-10 mb-10">
     <form id="addressForm" method="post" action="/add-address/?id=<%=user._id%>">
         <div class="row">
@@ -49,6 +51,10 @@
         </div>
     </form>
 </div>
+<br>
+<br>
+<br>
+<%- include('../partials/user/footer') %> 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("addressForm");
@@ -106,5 +112,3 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 </script>
-</body>
-</html>

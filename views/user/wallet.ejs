@@ -1,0 +1,138 @@
+<%- include("../partials/user/header") %>
+<main class="main"> 
+<br>
+<br>
+<br>
+    <section class="mt-5 mb-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="text-center text-primary mb-4 text-success">Your Wallet</h2>
+                    <div class="wallet-info d-flex justify-content-between align-items-center p-4 bg-light rounded shadow-sm">
+                        <h4 class="font-weight-bold mb-0 text-success">Balance: $<%= walletData.balance.toFixed(2) %></h4>
+                        <button class="btn btn-outline-primary px-4" onclick="addFunds()">Add Funds</button>
+                    </div>
+                    
+                    <hr class="my-4" />
+                    
+                    <h4 class="text-secondary">Recent Transactions</h4>
+                    <div class="table-responsive bg-white rounded shadow-sm">
+                        <table class="table text-center table-striped table-hover mb-0">
+                            <thead class="thead-dark">
+                                <tr class="text-uppercase">
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Order ID</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Amount</th>
+                                    <th scope="col">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (walletData.transactions && walletData.transactions.length > 0) { %>
+                                    <% walletData.transactions.forEach(transaction => { %>
+                                        <tr>
+                                            <td><%= new Date(transaction.date).toLocaleDateString() %></td>
+                                            <td><%= transaction.orderId && transaction.orderId.orderId ? transaction.orderId.orderId : transaction.orderId || 'N/A' %></td>
+                                            <td class="<%= transaction.type%>">
+                                                <%= transaction.type%>
+                                            </td>
+                                            <td class="font-weight-bold">$<%= transaction.amount.toFixed(2) %></td>
+                                            <td><%= transaction.description || 'No description' %></td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="text-muted">No transactions available</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Referral Code Section -->
+                    <div class="referral-code-section p-4 bg-light rounded shadow-sm">
+                        <h4 class="text-success">Your Referral Code</h4>
+                        <p class="text-muted">Use the code below to refer friends and earn rewards:</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="font-weight-bold text-success" style="font-size: 40px;" id="referralCode"><%= user.referalCode %></h5>
+                            <button class="btn btn-outline-secondary"  onclick="copyReferralCode()">Copy Code</button>
+                        </div>
+                        <hr />
+                        <p class="text-secondary">
+                            By referring this code, you will earn 200 rupees, and your friend will receive 100 rupees upon signing up, Start sharing your code now!
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <br>
+    <br>
+    <br>
+    <br>
+</main>
+
+<script>
+    function addFunds() {
+        Swal.fire({
+            title: "Add Funds",
+            input: "number",
+            inputLabel: "Enter the amount to add",
+            inputPlaceholder: "Amount",
+            showCancelButton: true,
+            confirmButtonText: "Add",
+            preConfirm: (amount) => {
+                if (!amount || isNaN(amount) || amount <= 0) {
+                    Swal.showValidationMessage("Please enter a valid amount");
+                    return;
+                }
+                return fetch('/add-funds', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: "Funds Added",
+                            text: "Your wallet has been updated!",
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire("Error", "Failed to add funds. Please try again later.", "error");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    Swal.fire("Error", "An unexpected error occurred.", "error");
+                });
+            }
+        });
+    }
+
+    function copyReferralCode() {
+        const referralCode = document.getElementById('referralCode').innerText;
+        navigator.clipboard.writeText(referralCode).then(() => {
+            Swal.fire("Copied!", "Your referral code has been copied to clipboard.", "success");
+        }).catch(err => {
+            console.error("Failed to copy referral code:", err);
+            Swal.fire("Error", "Failed to copy referral code. Please try again.", "error");
+        });
+    }
+</script>
+
+<%- include("../partials/user/footer") %>

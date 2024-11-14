@@ -29,7 +29,6 @@ const verifyForgetPassOtp = async (req,res) => {
       }
     } catch (error) {
       res.status(500).json({success:false,message:"An error occured. Please try again"});
-    
     }
     
   }

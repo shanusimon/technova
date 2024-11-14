@@ -62,9 +62,8 @@ const userSchema = new Schema({
     redeemed:{
         type:Boolean
     },
-    redeemedusers:[{
-        type: Schema.Types.ObjectId,
-        ref:"User"
+    redeemedcoupon:[{
+        type:String
     }],
     searchHistory:[{
         category:{

@@ -50,31 +50,37 @@ const addCategory = async (req,res) => {
     
 }
 
-const addCategoryOffer = async (req,res) => {
+const addCategoryOffer = async (req, res) => {
     try {
         const percentage = parseInt(req.body.percentage);
         const categoryId = req.body.categoryId;
-        const category = await Category.findById(categoryId);
-        if(!category){
-            return res.status(404).json({status:false,message:"Cartegory not found"});
-        }
-        const products = await Product.find({category:category._id});
-        const hasProductOffer = products.some((product)=>product.productOffer > percentage);
-        if(hasProductOffer){
-            return res.json({status:false,message:"Product within this category already have product offers"})
-        }
-        await Category.updateOne({_id:categoryId},{$set:{categoryOffer:percentage}});
 
-        for(const product of products){
+        const category = await Category.findById(categoryId);
+        if (!category) {
+            return res.status(404).json({ status: false, message: "Category not found" });
+        }
+
+        const products = await Product.find({ category: category._id });
+
+        const hasHigherProductOffer = products.some((product) => product.productOffer >= percentage);
+        if (hasHigherProductOffer) {
+            return res.json({ status: false, message: "One or more products in this category already have a higher product offer" });
+        }
+
+        await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
+
+        for (const product of products) {
             product.productOffer = 0;
-            product.salePrice = product.regularPrice;
+            product.salePrice = product.regularPrice - Math.floor(product.regularPrice * (percentage / 100));
             await product.save();
         }
-        res.json({status:true});
+
+        res.json({ status: true });
     } catch (error) {
-        res.status(500).json({status:false,message:"Internal Server Error"})
+        res.status(500).json({ status: false, message: "Internal Server Error" });
     }
 };
+
 
 const removeCategoryOffer = async (req, res) => {
     try {

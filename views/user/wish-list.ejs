@@ -1,0 +1,120 @@
+<%-include("../partials/user/header")  %>
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="index.html" rel="nofollow">Home</a>
+                <span></span> Shop
+                <span></span> Wishlist
+            </div>
+        </div>
+    </div>
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table shopping-summery text-center">
+                            <thead>
+                                <tr class="main-heading">
+                                    <th scope="col" colspan="2">Product</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Stock Status</th>
+                                    <th scope="col">Action</th>
+                                    <th scope="col">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (data && data.length > 0) { %>
+                                    <% data.forEach(item => { %>
+                                        <tr>
+                                            <td class="product-image">
+                                                <img src="/uploads/re-image/<%= item.productId.productImage[0] %>" alt="<%= item.productId.productName %>" />
+
+                                            </td>
+                                            <td class="product-name">
+                                                <h6><%= item.productId.productName %></h6>
+                                            </td>
+                                            <td class="product-price">
+                                                <p>$<%= item.productId.salePrice.toFixed(2) %></p>
+                                            </td>
+                                            <td class="product-stock-status">
+                                                <p><%= item.productId.quantity ? 'In Stock' : 'Out of Stock' %></p>
+                                            </td>
+                                            <form method="post" action="/wishlist-addToCart">
+                                                <td class="product-action">
+                                                    <input name="productId" value="<%=item.productId._id%>" hidden>
+                                                    <button class="btn btn-primary">Add to Cart</button>
+                                                </td>
+                                            </form>
+                                            <td class="product-remove">
+                                                <button class="btn btn-danger" onclick="removeProduct('<%=item.productId._id%>','<%=wishlistId%>')">Remove</button>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                            </tbody>                            
+                        </table>            
+                        <% } else { %>
+                            <div>
+                                 <h3>No products added to wishlist</h3>
+                            </div>
+                        <% } %>            
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+<script>
+    async function removeProduct(productId, wishlistId) {
+        try {
+            const result = await Swal.fire({
+                title: "Are you Sure?",
+                text: "Do you really want to remove this from the wishlist?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, remove it!"
+            });
+
+            if (result.isConfirmed) {
+                const response = await fetch('/remove-wishlist-item', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ productId, wishlistId })
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        title: 'Removed!',
+                        text: 'The item has been removed from the wishlist!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to remove the item. Please try again later.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            Swal.fire({
+                title: 'Error',
+                text: 'An unexpected error occurred. Please try again later.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    }
+</script>
+
+<%-include("../partials/user/footer")  %>

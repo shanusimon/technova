@@ -55,6 +55,11 @@
                                     <input type="password" name="cpassword" id="cpassword" placeholder="Confirm Password">
                                     <span id="cpasswordError" class="error-message"></span>
                                 </div>
+                                <!-- Referral Code (optional) -->
+                                <div class="form-group">
+                                    <input type="text" name="referral_code" id="referral_code" placeholder="Referral Code (Optional)">
+                                    <span id="referralCodeError" class="error-message"></span>
+                                </div>
                                 <div class="login_footer form-group">
                                     <div class="chek-form">
                                         <div class="custome-checkbox">
@@ -73,7 +78,7 @@
                                 <div class="form-group">
                                     <button type="submit" class="btn btn-fill-out btn-block hover-up" name="signup">Submit &amp; Register</button>
                                 </div>
-                            </form>
+                            </form>                            
                             <div class="divider-text-center mt-15 mb-15">
                                 <span>or</span>
                             </div>
@@ -96,71 +101,80 @@
     <!-- JavaScript Validation -->
     <script>
         function validateForm() {
-            let isValid = true;
-            const username = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const cpassword = document.getElementById('cpassword').value.trim();
-            const terms = document.getElementById('terms').checked;
+                let isValid = true;
+                const username = document.getElementById('username').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const password = document.getElementById('password').value.trim();
+                const cpassword = document.getElementById('cpassword').value.trim();
+                const referralCode = document.getElementById('referral_code').value.trim(); 
+                const terms = document.getElementById('terms').checked;
 
-            // Email pattern validation
-            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                // Email pattern validation
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-            // Clear previous errors
-            document.getElementById('usernameError').textContent = '';
-            document.getElementById('emailError').textContent = '';
-            document.getElementById('phoneError').textContent = '';
-            document.getElementById('passwordError').textContent = '';
-            document.getElementById('cpasswordError').textContent = '';
-            document.getElementById('termsError').textContent = '';
+                // Clear previous errors
+                document.getElementById('usernameError').textContent = '';
+                document.getElementById('emailError').textContent = '';
+                document.getElementById('phoneError').textContent = '';
+                document.getElementById('passwordError').textContent = '';
+                document.getElementById('cpasswordError').textContent = '';
+                document.getElementById('referralCodeError').textContent = '';
+                document.getElementById('termsError').textContent = '';
 
-            // Username validation
-            if (username === "") {
-                document.getElementById('usernameError').textContent = "Username is required";
-                isValid = false;
+                // Username validation
+                if (username === "") {
+                    document.getElementById('usernameError').textContent = "Username is required";
+                    isValid = false;
+                }
+
+                // Email validation
+                if (email === "" || !emailPattern.test(email)) {
+                    document.getElementById('emailError').textContent = "Please enter a valid email";
+                    isValid = false;
+                }
+
+                // Phone validation (example: 10 digits)
+                const phonePattern = /^[0-9]{10}$/;
+                if (phone === "" || !phonePattern.test(phone)) {
+                    document.getElementById('phoneError').textContent = "Please enter a valid 10-digit phone number";
+                    isValid = false;
+                }
+
+                // Password validation (minimum 8 characters)
+                if (password === "") {
+                    document.getElementById('passwordError').textContent = "Password is required";
+                    isValid = false;
+                } else if (password.length < 8) {
+                    document.getElementById('passwordError').textContent = "Password must be at least 8 characters";
+                    isValid = false;
+                }
+
+                // Confirm Password validation
+                if (cpassword === "") {
+                    document.getElementById('cpasswordError').textContent = "Please confirm your password";
+                    isValid = false;
+                } else if (password !== cpassword) {
+                    document.getElementById('cpasswordError').textContent = "Passwords do not match";
+                    isValid = false;
+                }
+
+                // Referral code validation (optional)
+                if (referralCode !== "" && referralCode.length < 5) {
+                    document.getElementById('referralCodeError').textContent = "Referral code must be at least 5 characters if provided";
+                    isValid = false;
+                }
+
+                // Terms checkbox validation
+                if (!terms) {
+                    document.getElementById('termsError').textContent = "You must agree to the terms and policy";
+                    isValid = false;
+                }
+
+                // Return the final validation state
+                return isValid;
             }
 
-            // Email validation
-            if (email === "" || !emailPattern.test(email)) {
-                document.getElementById('emailError').textContent = "Please enter a valid email";
-                isValid = false;
-            }
-
-            // Phone validation (example: 10 digits)
-            const phonePattern = /^[0-9]{10}$/;
-            if (phone === "" || !phonePattern.test(phone)) {
-                document.getElementById('phoneError').textContent = "Please enter a valid 10-digit phone number";
-                isValid = false;
-            }
-
-            // Password validation (minimum 8 characters)
-            if (password === "") {
-                document.getElementById('passwordError').textContent = "Password is required";
-                isValid = false;
-            } else if (password.length < 8) {
-                document.getElementById('passwordError').textContent = "Password must be at least 8 characters";
-                isValid = false;
-            }
-
-            // Confirm Password validation
-            if (cpassword === "") {
-                document.getElementById('cpasswordError').textContent = "Please confirm your password";
-                isValid = false;
-            } else if (password !== cpassword) {
-                document.getElementById('cpasswordError').textContent = "Passwords do not match";
-                isValid = false;
-            }
-
-            // Terms checkbox validation
-            if (!terms) {
-                document.getElementById('termsError').textContent = "You must agree to the terms and policy";
-                isValid = false;
-            }
-
-            // Return the final validation state
-            return isValid;
-        }
     </script>
 </body>
 

@@ -1,308 +1,375 @@
-<!DOCTYPE html>
-<html class="no-js" lang="en">
+<%- include("../partials/user/header") %>
 
-<head>
-    <meta charset="utf-8">
-    <title>Evara - eCommerce HTML Template</title>
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" type="image/x-icon" href="evara-frontend/assets/imgs/theme/favicon.svg">
-    <link rel="stylesheet" href="evara-frontend/assets/css/main.css?v=3.4">
-    <style>
-        .single-hero-slider {
-            height: 500px;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            position: relative;
-        }
-    
-        .hero-slider-content-2 {
-            padding: 50px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            margin-top: 100px;
-        }
-    
-        .hero-slider-content-2 h2 {
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
-    
-        .hero-slider-content-2 p {
-            font-size: 16px;
-            margin-bottom: 30px;
-        }
-    
-        /* Animation classes */
-        .animated {
-            animation-duration: 1s;
-            animation-fill-mode: both;
-        }
-    
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translate3d(0, 40px, 0);
-            }
-            to {
-                opacity: 1;
-                transform: translate3d(0, 0, 0);
-            }
-        }
-    
-        .fadeInUp {
-            animation-name: fadeInUp;
-        }
-        .product-content-wrap {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            background-color: #f9f9f9;
-        }
+<style>
+    :root {
+        --primary-color: #4a90e2;
+        --secondary-color: #f39c12;
+        --text-color: #333;
+        --light-bg: #f8f9fa;
+        --dark-bg: #2c3e50;
+    }
 
-        .product-content-wrap h6 {
-            margin: 5px 0;
-            font-size: 16px;
-            color: #333;
-        }
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--light-bg);
+        color: var(--text-color);
+    }
 
-        .product-content-wrap h6:nth-child(2) {
-            color: #ff5722; /* Accent color for price */
-            font-weight: bold;
-        }
+    .main {
+        padding-top: 2rem;
+    }
 
-        .product-content-wrap h6:last-child {
-            color: green;
-            margin-top: 5px;
-        }
+    /* Banner Styles */
+    .home-slider {
+        margin-bottom: 3rem;
+    }
 
-    </style>
-</head>
+    .single-hero-slider {
+        position: relative;
+        height: 500px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 15px;
+        overflow: hidden;
+    }
 
-<body> 
-    <header class="header-area header-style-1 header-height-2">
-        <div class="header-top header-top-ptb-1 d-none d-lg-block">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-xl-3 col-lg-4">
-                        <div class="header-info">
-                            <ul>
-                                <li><i class="fi-rs-smartphone"></i> <a href="#">(+01) - 2345 - 6789</a></li>
-                                <li><i class="fi-rs-marker"></i><a href="page-contact.html">Our location</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-xl-6 col-lg-4 text-center">
-                        <div id="news-flash" class="d-inline-block">
-                            <ul>
-                                <li>Get great devices up to 50% off <a href="shop-grid-right.html">View details</a></li>
-                                <li>Supper Value Deals - Save more with coupons</li>
-                                <li>Trendy 25silver jewelry, save up 35% off today <a href="shop-grid-right.html">Shop now</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4">
-                        <div class="header-info header-info-right">
-                            <ul>
-                                <li>
-                                    <a class="language-dropdown-active" href="#"> <i class="fi-rs-world"></i> English <i class="fi-rs-angle-small-down"></i></a>
-                                    <ul class="language-dropdown">
-                                        <li><a href="#"><img src="evara-frontend/assets/imgs/theme/flag-fr.png" alt="">Français</a></li>
-                                        <li><a href="#"><img src="evara-frontend/assets/imgs/theme/flag-dt.png" alt="">Deutsch</a></li>
-                                        <li><a href="#"><img src="evara-frontend/assets/imgs/theme/flag-ru.png" alt="">Pусский</a></li>
-                                    </ul>
-                                    <% if (locals.userData || locals.user) { %>
-                                        <div>
-                                            <a href="#" class="sign-in-link" style="margin-right: 10px">
-                                                <%= (locals.userData || locals.user).username %>
-                                            </a>
-                                            <a style="margin-right:5px" href="/userprofile?id=<%= (locals.userData || locals.user)._id %>">Profile</a>
-                                            <a href="/logout">Logout</a>
-                                        </div>
-                                    <% } else { %>
-                                        <li><i class="fi-rs-user"></i>
-                                            <a href="/login">Log In</a>
-                                        </li> 
-                                        <li><i class="fi-rs-user"></i>
-                                            <a href="/signup">Sign up</a>
-                                        </li>
-                                    <% } %>                                                                     
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-    <main class="main">       
-        <section class="home-slider position-relative pt-50">
-            <% if (banner && banner.length > 0) { %>
-                <div class="hero-slider-1 dot-style-1 dot-style-1-position-1">
-                    <% for(let obj of banner) { %>
-                        <div class="single-hero-slider rectangle" style="background-image: url('/uploads/re-image/<%= obj.image %>');">
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col-lg-6 col-md-7">
-                                        <div class="hero-slider-content-2">
-                                            <h2 class="animated"><%= obj.title %></h2>
-                                            <p class="animated"><%= obj.description %></p>
-                                            <% if (obj.link) { %>
-                                                <a class="animated btn btn-primary" href="<%= obj.link %>" 
-                                                   target="_blank" rel="noopener noreferrer">
-                                                    Learn More
-                                                </a>
-                                            <% } %>
-                                        </div>
-                                    </div>
-                                </div>
+    .hero-slider-content-2 {
+        position: absolute;
+        top: 50%;
+        left: 5%;
+        transform: translateY(-50%);
+        max-width: 500px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 2rem;
+        border-radius: 10px;
+    }
+
+    .hero-slider-content-2 h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--dark-bg);
+    }
+
+    .hero-slider-content-2 p {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-3px);
+    }
+
+    /* Product Section Styles */
+    .product-tabs {
+        background-color: #fff;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .sorting-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .sort-label {
+        margin-right: 1rem;
+        font-weight: 600;
+    }
+
+    .sort-select {
+        padding: 0.5rem;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+
+    .nav-tabs {
+        border: none;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        color: var(--text-color);
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        margin-right: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .nav-tabs .nav-link.active,
+    .nav-tabs .nav-link:hover {
+        color: var(--primary-color);
+        background: none;
+        border-bottom: 2px solid var(--primary-color);
+    }
+
+    .view-more {
+        color: var(--primary-color);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    /* Product Grid Styles */
+    .product-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .product-cart-wrap {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-cart-wrap:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .product-img-action-wrap {
+        position: relative;
+    }
+
+    .product-img {
+        height: 250px;
+        overflow: hidden;
+    }
+
+    .product-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .product-cart-wrap:hover .product-img img {
+        transform: scale(1.1);
+    }
+
+    .product-content-wrap {
+        padding: 1rem;
+    }
+
+    .product-content-wrap h6 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-action-1 {
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+    }
+
+    .action-btn {
+        background-color: var(--primary-color);
+        color: #fff;
+        padding: 0.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+        background-color: var(--secondary-color);
+        transform: scale(1.1);
+    }
+</style>
+
+<main class="main">       
+    <section class="home-slider position-relative pt-50">
+        <% if (banner && banner.length > 0) { %>
+            <div class="hero-slider-1 dot-style-1 dot-style-1-position-1">
+                <% for(let obj of banner) { %>
+                    <div class="single-hero-slider" style="background-image: url('/uploads/re-image/<%= obj.image %>');">
+                        <div class="container">
+                            <div class="hero-slider-content-2">
+                                <h2 class="animated"><%= obj.title %></h2>
+                                <p class="animated"><%= obj.description %></p>
+                                <% if (obj.link) { %>
+                                    <a class="animated btn btn-primary" href="<%= obj.link %>" 
+                                       target="_blank" rel="noopener noreferrer">
+                                        Learn More
+                                    </a>
+                                <% } %>
                             </div>
                         </div>
-                    <% } %>
-                </div>
-                <div class="slider-arrow hero-slider-1-arrow"></div>
-            <% } else { %>
-                <div class="text-center py-5">
-                    <p>No active banners to display</p>
-                </div>
-            <% } %>
-        </section>
-        <section class="product-tabs section-padding position-relative wow fadeIn animated">
-            <div class="bg-square"></div>
-            <div class="container">
-                <div class="tab-header">
-                    <div class="sorting-container">
-                        <label for="sort-by" class="sort-label">Sort by:</label>
-                        <select id="sort-by" class="sort-select" onchange="handleSortChange()">
-                            <option value="default">Default</option>
-                            <option value="popularity">Popularity</option>
-                            <option value="price-low-high">Price: Low to High</option>
-                            <option value="price-high-low">Price: High to Low</option>
-                            <option value="rating">Average Rating</option>
-                            <option value="new-arrivals">New Arrivals</option>
-                            <option value="alphabetical-a-z">Alphabetical (A-Z)</option>
-                            <option value="alphabetical-z-a">Alphabetical (Z-A)</option>
-                        </select>
                     </div>
-                    <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="nav-tab-one" data-bs-toggle="tab" data-bs-target="#tab-one" type="button" role="tab" aria-controls="tab-one" aria-selected="true">Featured</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="nav-tab-two" data-bs-toggle="tab" data-bs-target="#tab-two" type="button" role="tab" aria-controls="tab-two" aria-selected="false">Popular</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="nav-tab-three" data-bs-toggle="tab" data-bs-target="#tab-three" type="button" role="tab" aria-controls="tab-three" aria-selected="false">New added</button>
-                        </li>
-                    </ul>
-                    <a href="#" class="view-more d-none d-md-flex">View More<i class="fi-rs-angle-double-small-right"></i></a>
-                </div>
+                <% } %>
+            </div>
+            <div class="slider-arrow hero-slider-1-arrow"></div>
+        <% } else { %>
+            <div class="text-center py-5">
+                <p>No active banners to display</p>
+            </div>
+        <% } %>
+    </section>
 
-                <div class="tab-content wow fadeIn animated" id="myTabContent">
-                    <div class="tab-pane fade show active" id="tab-one" role="tabpanel" aria-labelledby="tab-one">
-                        <div id="products-container" class="product-grid-4" style="display: flex; flex-wrap: wrap; gap: 20px;">
-                            <% for(let i = 0; i < products.length; i++) { %>
-                                <div class="product-cart-wrap mb-30" style="flex: 1 1 23%; box-sizing: border-box; margin: 10px;">
-                                    <div class="product-img-action-wrap">
-                                        <div class="product-img product-img-zoom">
-                                            <a href="/productDeatils?id=<%= products[i]._id %>">
-                                                <img class="default-img" src="/uploads/re-image/<%= products[i].productImage[0] %>" alt="<%= products[i].productName %>">
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <div class="product-content-wrap">
-                                        <h6><%= products[i].productName %></h6>
-                                        <h6>₹ <%= products[i].salePrice.toLocaleString() %></h6>
-                                        <h6 style="color:green">Stocks:<%=products[i].quantity%></h6>
-                                    </div>
-                                    <div class="product-action-1 show">
-                                        <a aria-label="Add To Cart" class="action-btn hover-up" href="/addcart?id=<%= products[i]._id %>">
-                                            <i class="fi-rs-shopping-bag-add"></i>
+    <section class="product-tabs section-padding position-relative wow fadeIn animated">
+        <div class="container">
+            <div class="tab-header">
+                <div class="sorting-container">
+                    <label for="sort-by" class="sort-label">Sort by:</label>
+                    <select id="sort-by" class="sort-select" onchange="handleSortChange()">
+                        <option value="default">Default</option>
+                        <option value="popularity">Popularity</option>
+                        <option value="price-low-high">Price: Low to High</option>
+                        <option value="price-high-low">Price: High to Low</option>
+                        <option value="rating">Average Rating</option>
+                        <option value="new-arrivals">New Arrivals</option>
+                        <option value="alphabetical-a-z">Alphabetical (A-Z)</option>
+                        <option value="alphabetical-z-a">Alphabetical (Z-A)</option>
+                    </select>
+                </div>
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="nav-tab-one" data-bs-toggle="tab" data-bs-target="#tab-one" type="button" role="tab" aria-controls="tab-one" aria-selected="true">Featured</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="nav-tab-two" data-bs-toggle="tab" data-bs-target="#tab-two" type="button" role="tab" aria-controls="tab-two" aria-selected="false">Popular</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="nav-tab-three" data-bs-toggle="tab" data-bs-target="#tab-three" type="button" role="tab" aria-controls="tab-three" aria-selected="false">New added</button>
+                    </li>
+                </ul>
+                <a href="#" class="view-more d-none d-md-flex">View More<i class="fi-rs-angle-double-small-right"></i></a>
+            </div>
+
+            <div class="tab-content wow fadeIn animated" id="myTabContent">
+                <div class="tab-pane fade show active" id="tab-one" role="tabpanel" aria-labelledby="tab-one">
+                    <div id="products-container" class="product-grid-4">
+                        <% for(let i = 0; i < products.length; i++) { %>
+                            <div class="product-cart-wrap">
+                                <div class="product-img-action-wrap">
+                                    <div class="product-img">
+                                        <a href="/productDeatils?id=<%= products[i]._id %>">
+                                            <img src="/uploads/re-image/<%= products[i].productImage[0] %>" alt="<%= products[i].productName %>">
                                         </a>
                                     </div>
                                 </div>
-                            <% } %>
-                        </div>                        
-                    </div>
-                </div>                
-            </div>
-        </section>
-
-        <%- include('../partials/user/footer') %>
-
-        <script>
-            function handleSortChange(){
-                const sortBy = document.getElementById('sort-by').value;
-                fetch(`/sort?sort=${sortBy}`, {
-                    method: 'GET'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    updateProductList(data.products);
-                })
-                .catch(error => console.log(error)); 
-            }
-
-            function updateProductList(products) {
-                const productsContainer = document.getElementById('products-container');
-                productsContainer.innerHTML = ''; 
-
-                products.forEach(product => {
-                    const productElement = document.createElement('div');
-                    productElement.className = 'product-cart-wrap mb-30';
-                    productElement.style = "flex: 1 1 23%; box-sizing: border-box; margin: 10px;";
-                    productElement.innerHTML = `
-                        <div class="product-img-action-wrap">
-                            <div class="product-img product-img-zoom">
-                                <a href="/productDeatils?id=${product._id}">
-                                    <img class="default-img" src="/uploads/re-image/${product.productImage[0]}" alt="${product.productName}">
-                                </a>
+                                <div class="product-content-wrap">
+                                    <h6><%= products[i].productName %></h6>
+                                    <h6>₹ <%= products[i].salePrice.toLocaleString() %></h6>
+                                    <h6 style="color: green">Stocks: <%= products[i].quantity %></h6>
+                                </div>
+                                <div class="product-action-1">
+                                    <a aria-label="Add To Cart" class="action-btn" href="/addcart?id=<%= products[i]._id %>">
+                                        <i class="fi-rs-shopping-bag-add"></i>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="product-content-wrap">
-                            <h6>${product.productName}</h6>
-                            <h6>₹ ${product.salePrice.toLocaleString()}</h6>
-                        </div>
-                        <div class="product-action-1 show">
-                            <a aria-label="Add To Cart" class="action-btn hover-up" href="/addcart?id=${product._id}">
-                                <i class="fi-rs-shopping-bag-add"></i>
-                            </a>
-                        </div>
-                    `;
-                    productsContainer.appendChild(productElement);
-                });
-            }
-        </script>
-        <script>
-            $(document).ready(function() {
-                $('.hero-slider-1').slick({
-                    dots: true,
-                    infinite: true,
-                    speed: 500,
-                    slidesToShow: 1,
-                    slidesToScroll: 1,
-                    autoplay: true,
-                    autoplaySpeed: 5000,
-                    arrows: true,
-                    prevArrow: '<span class="slider-btn slider-prev"><i class="fi-rs-angle-left"></i></span>',
-                    nextArrow: '<span class="slider-btn slider-next"><i class="fi-rs-angle-right"></i></span>',
-                    appendArrows: '.hero-slider-1-arrow',
-                    fade: true,
-                    responsive: [
-                        {
-                            breakpoint: 768,
-                            settings: {
-                                arrows: false,
-                                dots: true
-                            }
-                        }
-                    ]
-                });
-            });
-        </script>
-    </main>
+                        <% } %>
+                    </div>                        
+                </div>
+            </div>                
+        </div>
+    </section>
+</main>
+
+<%- include('../partials/user/footer') %>
+
+<script>
+    function handleSortChange() {
+        const sortBy = document.getElementById('sort-by').value;
+        fetch(`/sort?sort=${sortBy}`, {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateProductList(data.products);
+        })
+        .catch(error => console.log(error)); 
+    }
+
+    function updateProductList(products) {
+        const productsContainer = document.getElementById('products-container');
+        productsContainer.innerHTML = ''; 
+
+        products.forEach(product => {
+            const productElement = document.createElement('div');
+            productElement.className = 'product-cart-wrap';
+            productElement.innerHTML = `
+                <div class="product-img-action-wrap">
+                    <div class="product-img">
+                        <a href="/productDeatils?id=${product._id}">
+                            <img src="/uploads/re-image/${product.productImage[0]}" alt="${product.productName}">
+                        </a>
+                    </div>
+                </div>
+                <div class="product-content-wrap">
+                    <h6>${product.productName}</h6>
+                    <h6>₹ ${product.salePrice.toLocaleString()}</h6>
+                    <h6 style="color: green">Stocks: ${product.quantity}</h6>
+                </div>
+                <div class="product-action-1">
+                    <a aria-label="Add To Cart" class="action-btn" href="/addcart?id=${product._id}">
+                        <i class="fi-rs-shopping-bag-add"></i>
+                    </a>
+                </div>
+            `;
+            productsContainer.appendChild(productElement);
+        });
+    }
+
+    $(document).ready(function() {
+        $('.hero-slider-1').slick({
+            dots: true,
+            infinite: true,
+            speed: 500,
+            slidesToShow: 1,
+            slidesToScroll: 1,
+            autoplay: true,
+            autoplaySpeed: 5000,
+            arrows: true,
+            prevArrow: '<span class="slider-btn slider-prev"><i class="fi-rs-angle-left"></i></span>',
+            nextArrow: '<span class="slider-btn slider-next"><i class="fi-rs-angle-right"></i></span>',
+            appendArrows: '.hero-slider-1-arrow',
+            fade: true,
+            responsive: [
+                {
+                    breakpoint: 768,
+                    settings: {
+                        arrows: false,
+                        dots: true
+                    }
+                }
+            ]
+        });
+    });
+
+    function catFilter(){
+        const value = document.getElementById("cat-filter").value;
+        fetch(`/filter-by-category?category=${value}`,{
+            method:'get',
+        })
+        .then((response)=>response.json())
+        .then(data=>{
+            updateProductList(data.products)
+        })
+        .catch(error=>console.log('Error:',error))
+    }
+</script>
+
 </body>
 </html>

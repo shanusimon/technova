@@ -8,10 +8,11 @@ const userRouter = require("./routes/userRouter");
 const adminRouter = require("./routes/adminRouter");
 const session = require('express-session');
 
-// Connect to the database
+
 db();
 
-// Middleware setup
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
@@ -19,26 +20,26 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: false, // Set to true if using HTTPS
+        secure: false, 
         httpOnly: true,
-        maxAge: 72 * 60 * 60 * 1000 // 72 hours
+        maxAge: 72 * 60 * 60 * 1000 
     }
 }));
 
-// Passport initialization
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Disable caching
+
 app.use((req, res, next) => {
     res.set('cache-control', 'no-store');
     next();
 });
 
-// Static file serving
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Set view engine
+
 app.set("view engine", "ejs");
 app.set("views", [
     path.join(__dirname, 'views/user'),
@@ -46,16 +47,13 @@ app.set("views", [
 ]);
 
 
-
-// Route definitions
 app.use("/", userRouter);
 app.use('/admin', adminRouter);
 
 
-
-// Start the server
 app.listen(process.env.PORT, () => {
     console.log("Server is Running on port " + process.env.PORT);
 });
+
 
 module.exports = app;

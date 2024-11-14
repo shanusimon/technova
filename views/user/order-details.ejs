@@ -96,6 +96,10 @@
                                         <td><strong>Total Amount:</strong></td>
                                         <td><strong>₹ <%= order.finalAmount ? order.finalAmount.toLocaleString() : '0' %></strong></td>
                                     </tr>
+                                    <tr>
+                                        <strong>payment method</strong>
+                                        <h5><%= order.paymentMethod  %></h5>
+                                    </tr>
                                 </table>
                             </div>
                         </div>

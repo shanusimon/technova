@@ -85,7 +85,9 @@
                                         <% } %>
                                     <% } else { %>
                                         <tr>
-                                            <td colspan="6" class="text-center">Your cart is empty.</td>
+                                            <td colspan="6" class="text-center">
+                                                Your cart is Empty
+                                            </td>
                                         </tr>
                                     <% } %>
                                 </tbody>                                
@@ -165,25 +167,34 @@ function confirmRemove(productId) {
             });
         }
 
-function updateQuantity(productId, change) {
-    const quantityElement = document.getElementById(`quantity-${productId}`);
-    const currentQuantity = parseInt(quantityElement.textContent);
+        function updateQuantity(productId, change) {
+        const quantityElement = document.getElementById(`quantity-${productId}`);
+        const currentQuantity = parseInt(quantityElement.textContent);
+        const newQuantity = currentQuantity + change;
 
-    if(currentQuantity + change < 1){
-        Swal.fire({
-            icon:"warning",
-            title:'Minimum Quantity Reached',
-            text:"The minimum quantity is 1"
-        });
-        return;
-    }
-    fetch('/update-cart-quantity', {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ productId, change }),
-    })
+        if (newQuantity < 1) {
+            Swal.fire({
+                icon: "warning",
+                title: 'Minimum Quantity Reached',
+                text: "The minimum quantity is 1"
+            });
+            return;
+        } else if (newQuantity > 5) {
+            Swal.fire({
+                icon: "warning",
+                title: 'Maximum Quantity Reached',
+                text: "The maximum quantity is 5"
+            });
+            return;
+        }
+
+        fetch('/update-cart-quantity', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ productId, change }),
+        })
         .then(response => response.json())
         .then(data => {
             if (data.success) {

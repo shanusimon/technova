@@ -8,7 +8,7 @@ const env = require("dotenv").config();
 const bcrypt = require("bcrypt");
 const { get } = require("../../routes/userRouter");
 const Order = require("../../models/orderSchema");
-
+const Wallet = require("../../models/walletSchema");
 
 
 const loadHomepage = async (req,res) => {
@@ -36,7 +36,7 @@ const loadHomepage = async (req,res) => {
         }else{
             return res.render("home",{
                 products:productData,
-                banner:banner || []
+                banner:banner || [],
             });
         }
     } catch (error) {
@@ -44,6 +44,96 @@ const loadHomepage = async (req,res) => {
         res.status(500).send("server error");
     }
 }
+
+
+const cancelOrder = async (req,res) => {
+    try {
+        const userId = req.session.user._id
+        const orderId = req.query.id;
+        const orderData = await Order.findById(orderId);
+        if(orderData.paymentMethod==="COD"){
+            await Order.findByIdAndUpdate(orderId,{status:"Cancelled"});
+            return res.redirect("/userprofile");
+        }else if(orderData.paymentMethod==="Online"){
+            console.log(`the wallet data is ${orderData}`)
+            const amount = orderData.finalAmount;
+
+            const walletData = {
+                    $inc:{balance:amount},
+                    $push:{
+                        transactions:{
+                            type:'refund',
+                            amount,
+                            orderId
+                        }
+                    }
+                }
+            console.log(`the wallet data is ${walletData}`)
+            const walletUpdate = await Wallet.findOneAndUpdate(
+                {userId:userId},
+                walletData,
+                {upsert:true,new:true}
+            )
+
+            if(!walletUpdate){
+                throw new Error("Failed to update Wallet");
+            }else{
+                await Order.findByIdAndUpdate(orderId,{status:"Cancelled"});
+            }
+        }
+        return res.redirect('/userprofile');
+
+    } catch (error) {
+        console.log("Error in canceling order");
+        res.redirect('pagenotFound')
+    }
+    
+}
+
+const returnOrder = async (req, res) => {
+    try {
+        const orderId = req.query.id;
+        const userId = req.session.user._id;
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        const amount = order.finalAmount;
+
+        const walletData = {
+            $inc: { balance: amount },
+            $push: {
+                transactions: {
+                    type: 'Refund',
+                    amount,
+                    orderId,
+                    description: "Refund for your returned product"
+                }
+            }
+        };
+
+        const walletUpdate = await Wallet.findOneAndUpdate(
+            { userId: userId },
+            walletData,
+            { upsert: true, new: true }
+        );
+
+        if(!walletUpdate){
+            throw new Error("Failed to update Wallet");
+        }else{
+            await Order.findByIdAndUpdate(orderId,{status:"Cancelled"});
+        }
+
+        res.status(200).json({success:true, message: "Order returned successfully, amount refunded to wallet" });
+
+    } catch (error) {
+        console.error("Error in returnOrder:", error);
+        res.status(500).json({success:false, message: "An error occurred while processing the return" });
+    }
+};
+
 
 const sortProduct = async (req,res) => {
     try {
@@ -84,6 +174,7 @@ const sortProduct = async (req,res) => {
     }
 }
 
+
 const pageNotfound = async (req,res) => {
     try {
         return res.render("page-404")
@@ -92,6 +183,7 @@ const pageNotfound = async (req,res) => {
     }
     
 }
+
 
 const loadSignup = async (req,res) => {
     try {
@@ -102,9 +194,11 @@ const loadSignup = async (req,res) => {
     }
 }
 
+
 function generateOtp(){
     return Math.floor(100000 + Math.random()*900000).toString();
 }
+
 
 async function sendVerificationEmail(email,otp) {
     try {
@@ -133,9 +227,10 @@ async function sendVerificationEmail(email,otp) {
     }
 }
 
+
 const signup = async (req, res) => {
   try {
-    const { username, phone, email, password, cpassword } = req.body;
+    const { username, phone, email, password, cpassword,referral_code} = req.body;
 
     if (password != cpassword) {
       return res.render("signup", { message: "Passwords do not match" });
@@ -146,7 +241,7 @@ const signup = async (req, res) => {
     if(findUser){
       return res.render("signup", {
         message: "User with this email already exists",
-      });
+      })
     }
 
     const otp = generateOtp();
@@ -160,7 +255,7 @@ const signup = async (req, res) => {
     console.log("User Data to store in session:", { username, phone, email, password })
 
     req.session.userOtp = otp;
-    req.session.userData = { username, phone, email, password };
+    req.session.userData = { username, phone, email, password,referral_code };
 
 
     res.render("verify-otp");
@@ -169,7 +264,7 @@ const signup = async (req, res) => {
     console.error("Signup eror", error);
     res.redirect("/pageNotFound");
   }
-};
+}
 
 
 const securePassword = async(password) => {
@@ -182,29 +277,82 @@ const securePassword = async(password) => {
     
 }
 
-const verifyOtp = async (req,res) => {
+
+const generateCoupon = (length)=>{
+    let result = "";
+    const charcters = "abcdef0123456789";
+
+    for(let i = 0; i< length;i++){
+        result += charcters[Math.floor(Math.random()*charcters.length)]
+    }
+
+    return result;
+}
+
+
+const verifyOtp = async (req, res) => {
     try {
-        const {otp} = req.body;
-        if(otp===req.session.userOtp){
-            const user = req.session.userData; 
+        const { otp } = req.body;
+
+        if (otp === req.session.userOtp) {
+            const user = req.session.userData;
             const passwordHash = await securePassword(user.password);
-            const saveUserData = new User({
-                username:user.username,
-                email:user.email,
-                phone:user.phone,
-                password:passwordHash
-            })
-            await saveUserData.save();
-            req.session.user = saveUserData._id;
-            res.json({success:true,redirectUrl:"/"})
-        }else{
-            res.status(400).json({success:false,message:"Invalid OTP, Please try again"})
+            const referal = generateCoupon(5);
+            const referCredit = 200;
+            const newUserCredit = 100;
+
+            const referCode = user.referral_code;
+            const UserWithReferal = await User.findOne({ referalCode: referCode });
+            
+            const newUser = new User({
+                username: user.username,
+                email: user.email,
+                phone: user.phone,
+                password: passwordHash,
+                referalCode: referal
+            });
+            await newUser.save();
+            req.session.userData = null;
+            req.session.user = newUser;
+
+            if (UserWithReferal) {
+                let referUserWallet = await Wallet.findOne({ userId: UserWithReferal._id });
+                if (!referUserWallet) {
+                    referUserWallet = new Wallet({ userId: UserWithReferal._id, balance: 0 });
+                }
+                referUserWallet.balance += referCredit;
+                referUserWallet.transactions.push({
+                    type: 'credit',
+                    amount: referCredit,
+                    description: 'Referral bonus for inviting a new user',
+                    orderId: null 
+                });
+                await referUserWallet.save();
+
+                let newUserWallet = await Wallet.findOne({ userId: newUser._id });
+                if (!newUserWallet) {
+                    newUserWallet = new Wallet({ userId: newUser._id, balance: 0 });
+                }
+                newUserWallet.balance += newUserCredit;
+                newUserWallet.transactions.push({
+                    type: 'credit',
+                    amount: newUserCredit,
+                    description: 'Referral bonus for signing up with a referral code',
+                    orderId: null
+                });
+                await newUserWallet.save();
+            }
+
+            res.json({ success: true, redirectUrl: "/" });
+        } else {
+            res.status(400).json({ success: false, message: "Invalid OTP, Please try again" });
         }
     } catch (error) {
-        console.error("Error Verifying OTP",error);
-        res.status(500).json({success:false,message:"An error occured"})
+        console.error("Error Verifying OTP", error);
+        res.status(500).json({ success: false, message: "An error occurred" });
     }
-}
+};
+
 
 const resendOtp = async (req, res) => {
     try {
@@ -230,16 +378,21 @@ const resendOtp = async (req, res) => {
         console.error("Error resending OTP:", error);
         return res.status(500).json({ success: false, message: "Internal Server Error: Please try again." });
     }
-};
+}
 
 
 const loadlogin = async (req,res) => {
     try {
-        if(!req.session.user){
-            return res.render("login")
-        }else{
-            res.redirect("/")
-        }
+        if (req.session.user) {
+            const user = await User.findById(req.session.user);
+            if (user && user.isBlocked) {
+              req.session.user = null;
+              return res.render("login", { message: "User is blocked" });
+            }
+            return res.redirect("/");
+          } else {
+            return res.render("login", { message: '' });
+          }
     } catch (error) {
         res.redirect("/pageNotFound");
     }
@@ -305,7 +458,6 @@ const getuserprofile = async (req,res) => {
             const addressDoc = await Address.findOne({userId});
             const orders = await Order.find({ user: userId })
             .populate('orderedItems.product')
-            .populate('address')
             .sort({ creaetedOn: -1 });
    
             if (!user) {
@@ -435,7 +587,8 @@ const deleteAddress = async (req, res) => {
         console.error("Error deleting address:", error);
         res.status(500).send("Error deleting address");
     }
-};
+}
+
 
 const orderProductDetails = async (req, res) => {
     try {
@@ -462,17 +615,7 @@ const orderProductDetails = async (req, res) => {
     }
 }
 
-const cancelOrder = async (req,res) => {
-    try {
-        const orderId = req.query.id;
-        await Order.findByIdAndUpdate(orderId,{status:"Cancelled"});
-        res.redirect("/userprofile");
-    } catch (error) {
-        console.log("Error in canceling order");
-        res.redirect('pagenotFound')
-    }
-    
-}
+
 
 const getEditAddress = async (req,res) => {
     try {
@@ -500,6 +643,7 @@ const getEditAddress = async (req,res) => {
     }
     
 }
+
 
 const saveAddress = async (req, res) => {
     try {
@@ -556,6 +700,7 @@ module.exports ={
     sortProduct,
     cancelOrder,
     getEditAddress,
-    saveEditAddress
+    saveEditAddress,
+    returnOrder
 }
     

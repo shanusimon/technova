@@ -1,0 +1,94 @@
+<%- include("../../views/partials/admin/header") %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Coupon Management</h2>
+  
+  <!-- Add Coupon Button -->
+  <div class="text-right mb-3">
+    <button class="btn btn-primary" data-toggle="modal" data-target="#addCouponModal">
+        <a style="color: white;" href="/admin/add-coupons">Add Coupons</a>
+    </button>
+  </div>
+  
+  <!-- Coupon Table -->
+  <table class="table table-bordered table-hover">
+    <thead class="thead-dark">
+      <tr>
+        <th>Coupon Code</th>
+        <th>Discount Percentage</th>
+        <th>Minimum Amount</th>
+        <th>Maximum Amount</th>
+        <th>Created On</th>
+        <th>End On</th>
+        <th>Is Active</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% data.forEach(element => { %>
+        <tr>
+          <td><%= element.code %></td>
+          <td><%= element.price %></td>
+          <td><%= element.minimumAmount %></td>
+          <td><%= element.maximumAmount  %></td>
+          <td><%= element.createdOn %></td>
+          <td><%= element.endOn %></td>
+          <td><%= element.isActive ? 'Yes' : 'No' %></td>
+          <td>
+            <button>
+              <a onclick="confirmDelete('<%=element._id%>')">Delete</a>
+            </button>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+  <br>
+  <br>
+  <br>
+  <br>
+</div>
+<script>
+async function confirmDelete(CouponId) {
+  try {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you really want to delete this coupon?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'No, cancel!',
+    }).then((result)=>{
+        if(result.isConfirmed){
+          fetch(`/admin/delete?id=${CouponId}`,{
+            method:'post',
+            headers:{
+              'Content-Type':'application/json',
+            },
+          })
+          .then(response=>{
+            if(response.ok){
+              Swal.fire({
+                title:"Coupon Deleted Sucssesfully",
+                icon:'success'
+              })
+              window.location.reload();
+            }else{
+              Swal.fire('Error!', 'There was a problem deleting the coupon.', 'error');
+            }
+          })
+        }
+    })
+  } catch (error) {
+    console.log("Error in deleting coupon")
+    Swal.fire('Error!', 'There was a network error.', 'error');
+  }
+  
+}
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

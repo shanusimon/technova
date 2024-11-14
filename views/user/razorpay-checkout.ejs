@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment</title>
+</head>
+<body>
+    <button id="payNow">Pay with Razorpay</button>
+    
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        document.getElementById('payNow').onclick = function () {
+            // Parse the single product and cart data safely
+            let singleProductData = "<%= singleProduct ? JSON.stringify(singleProduct) : 'null' %>";
+            let cartData = "<%= cart ? JSON.stringify(cart) : 'null' %>";
+
+            const options = {
+                key: "<%= razorpayKeyId %>",
+                amount: parseInt("<%= amount %>") * 100,
+                currency: "INR",
+                name: "Your Company",
+                description: "Order Payment",
+                order_id: "<%= razorpayOrderId %>",
+                handler: async function (response) {
+                    try {
+                        const payloadData = {
+                            paymentId: response.razorpay_payment_id,
+                            razorpayOrderId: response.razorpay_order_id,
+                            signature: response.razorpay_signature,
+                            amount: "<%= amount %>",
+                            addressId: "<%= addressId %>"
+                        };
+
+                        // Add either singleProduct or cart to the payload
+                        if (singleProductData) {
+                            payloadData.singleProduct = JSON.stringify(singleProductData);
+                        } else if (cartData) {
+                            payloadData.cart = JSON.stringify(cartData);
+                        }
+
+                        console.log('Sending payload:', payloadData); // Debug log
+
+                        const verificationResponse = await fetch('/verifyPayment', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payloadData)
+                        });
+                        
+                        const result = await verificationResponse.json();
+                        
+                        if (result.success) {
+                            alert("Payment successful and order placed!");
+                            window.location.href = '/order-success';
+                        } else {
+                            alert("Payment verification failed: " + (result.message || ''));
+                        }
+                    } catch (error) {
+                        console.error("Error during payment verification:", error);
+                        alert("An error occurred. Please try again.");
+                    }
+                },
+                theme: {
+                    color: "#3399cc"
+                }
+            };
+            
+            const rzp = new Razorpay(options);
+            rzp.open();
+        };
+    </script>
+</body>
+</html>

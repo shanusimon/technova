@@ -60,7 +60,7 @@
                                 <td><%= order.user.username %></td> 
                                 <td><%= order.totalPrice %></td> 
                                 <td>
-                                    <select name="status" onchange="updateStatus('<%= order._id %>', this.value)">
+                                    <select name="status" data-current-status="<%= order.status %>" onchange="updateStatus('<%= order._id %>', this)">
                                         <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
                                         <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
                                         <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
@@ -68,7 +68,7 @@
                                         <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
                                         <option value="Return Request" <%= order.status === 'Return Request' ? 'selected' : '' %>>Return Request</option>
                                         <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %>>Returned</option>
-                                    </select>
+                                    </select>                                    
                                 </td>                                
                             </tr>
                         <% }) %>
@@ -93,35 +93,50 @@
 <%- include("../../views/partials/admin/footer") %> 
 
 <script>
-    async function updateStatus(orderId, status) {
-        try {
-            const response = await fetch(`/admin/update-status/${orderId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ status })
-            });
+   async function updateStatus(orderId, selectElement) {
+    const currentStatus = selectElement.getAttribute("data-current-status");
+    const newStatus = selectElement.value;
 
-            if (response.ok) {
-                Swal.fire({
-                    title:'Success',
-                    text:'Order Status Updated Sucessfully',
-                    icon:'success',
-                    confirmButtonText: 'OK'
-                })
-                console.log("Status updated successfully");
-            } else {
-                Swal.fire({
-                    title:"Failed",
-                    text:"Order Status Updating Failed",
-                    icon:'error',
-                    confirmButtonText: 'OK'
-                })
-                console.error("Failed to update status");
-            }
-        } catch (error) {
-            console.error("Error:", error);
-        }
+    if (currentStatus === "Delivered") {
+        Swal.fire({
+            title: "Status Locked",
+            text: "The order is already delivered and cannot be changed to another status.",
+            icon: "warning",
+            confirmButtonText: "OK"
+        });
+        selectElement.value = "Delivered";
+        return;
     }
+
+    try {
+        const response = await fetch(`/admin/update-status/${orderId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        if (response.ok) {
+            Swal.fire({
+                title: 'Success',
+                text: 'Order Status Updated Successfully',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+            selectElement.setAttribute("data-current-status", newStatus);
+        } else {
+            Swal.fire({
+                title: "Failed",
+                text: "Order Status Update Failed",
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            selectElement.value = currentStatus;
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
 </script>

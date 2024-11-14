@@ -1,0 +1,41 @@
+<%- include('../partials/user/header') %>
+
+    <main class="main">
+        <section class="search-results section-padding">
+            <div class="container wow fadeIn animated">
+             
+                
+                <% if (products.length > 0) { %>
+                    <div class="row product-grid-4">
+                        <% products.forEach(product => { %>
+                            <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                <div class="product-cart-wrap mb-30">
+                                    <div class="product-img-action-wrap">
+                                        <div class="product-img product-img-zoom">
+                                            <a href="/productdeatils?id=<%= product._id %>">
+                                                <img class="default-img" src="/uploads/re-image/<%= product.productImage[0] %>" alt="<%= product.productName %>">
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="product-content-wrap">
+                                        <h4><%= product.productName %></h4>
+                                        <p>Category: <%= product.category.name%></p>
+                                        <h5>₹<%= product.salePrice.toLocaleString() %></h5>
+                                        <p>Rating: <%= product.rating !== undefined ? product.rating : 'N/A' %></p>
+                                        <% if (product.quantity > 0) { %>
+                                            <span class="text-success"><%= product.quantity %> stocks left</span>
+                                        <% } else { %>
+                                            <span class="text-danger">Out of Stock</span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <p>No products found matching your search criteria.</p>
+                <% } %>
+            </div>
+        </section>
+    </main>
+<%- include('../partials/user/footer') %>

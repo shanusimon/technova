@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const {Schema} = mongoose;
 
 const couponSchema = new mongoose.Schema({
-    name:{
+    code:{
         type:String,
         required:true,
         unique:true
@@ -13,19 +13,23 @@ const couponSchema = new mongoose.Schema({
         default:Date.now,
         required:true
     },
-    expireOn:{
+    endOn:{
         type:Date,
         required:true
     },
-    offerPrice:{
+    price:{
         type:Number,
         required:true
     },
-    minimumPrice:{
+    minimumAmount:{
         type:Number,
         required:true
     },
-    isList:{
+    maximumAmount:{
+        type:Number,
+        required:true
+    },
+    isActive:{
         type:Boolean,
         default:true
     },

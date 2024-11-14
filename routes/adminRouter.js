@@ -9,6 +9,8 @@ const productController = require("../controllers/admin/productController");
 const bannerController = require("../controllers/admin/bannerController");
 const orderController = require("../controllers/admin/orderController");
 const stockController = require("../controllers/admin/stockController");
+const couponController = require("../controllers/admin/couponController");
+const salesController = require("../controllers/admin/salesController");
 const multer = require("multer");
 const storage = require("../helpers/multer");
 const uploads = multer({storage:storage});
@@ -20,7 +22,6 @@ router.get("/login",adminController.loadlogin);
 router.post("/login",adminController.login);
 router.get('/',adminAuth,adminController.loadDashboard);
 router.get('/logout',adminController.logout);
-
 
 //Customer Managment
 router.get("/customers",customerController.customerInfo);
@@ -43,6 +44,7 @@ router.post("/addBrand",adminAuth,uploads.single('image'),brandController.addBra
 router.get("/blockBrand",adminAuth,brandController.blockBrand);
 router.get("/unblockBrand",adminAuth,brandController.unBlockbrand);
 router.get("/deleteBrand",adminAuth,brandController.deleteBrand);
+
 //add Products
 router.get("/addProduct",adminAuth,productController.getProductAddPage);
 router.post("/addProducts",adminAuth,uploads.array("images",4),productController.addProducts)
@@ -54,16 +56,29 @@ router.get("/unblockProduct",adminAuth,productController.unblockProduct);
 router.get("/editProduct",adminAuth,productController.geteditProduct);
 router.post("/editProduct/:id",adminAuth,uploads.array('images',4),productController.editProduct);
 router.post("/deleteImage",adminAuth,productController.deleteSingleImage);
+
 //banner management
 router.get("/banner",adminAuth,bannerController.getBrannerPage);
 router.get('/add-banner',adminAuth,bannerController.getAddBanner);
 router.post('/add-banner',adminAuth,uploads.single('images'),bannerController.addBanner);
 router.get('/deleteBanner',adminAuth,bannerController.deleteBanner);
+
 //order managment 
 router.get("/orders",adminAuth,orderController.getOrderList);
 router.post('/update-status/:id',adminAuth,orderController.updateStatus);
+
 //stock managment
 router.get('/stock',adminAuth,stockController.getStockPage);
 router.post('/update-stock',adminAuth,stockController.updateStock);
+
+//coupons managment
+router.get('/coupons',adminAuth,couponController.getCouponPage);
+router.get('/add-coupons',adminAuth,couponController.getaddCouponPage);
+router.post('/add-coupons',adminAuth,couponController.addCoupon);
+router.post('/delete',adminAuth,couponController.deleteCoupon);
+
+//sales Report
+router.get('/salesreport',adminAuth,salesController.showSaleReport);
+
 
 module.exports = router;

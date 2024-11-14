@@ -1,0 +1,356 @@
+<%- include("../../views/partials/admin/header") %>
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">Sales Report</h2>
+            <p>Comprehensive view of all sales transactions</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="card mb-4">
+        <header class="card-header">
+            <div class="row gx-3">
+                <div class="col-lg-2 col-6 col-md-3">
+                    <select class="form-select" id="dateFilter">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="year">This Year</option>
+                    </select>
+                </div>
+                <br>
+                <br>
+                <br>
+                <div class="mb-4 d-flex gap-3">
+                    <form class="d-flex align-items-center">
+                        <label for="startDate" class="me-2">Start Date:</label>
+                        <input type="date" id="startDate" name="startDate" class="form-control me-3">
+                        <label for="endDate" class="me-2">End Date:</label>
+                        <input type="date" id="endDate" name="endDate" class="form-control me-3">
+                    </form>
+                </div>
+            </div>
+        </header>
+    <div class="row mb-4">
+        <div class="col-lg-4">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-primary-light">
+                        <i class="text-primary material-icons md-monetization_on"></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1">Total Sales</h6>
+                        <span>&#8377;<%=sumOfSales.sum %></span>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-success-light">
+                        <i class="text-success material-icons md-shopping_bag"></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1">Total Orders</h6>
+                        <span><%=counts.count  %></span>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-warning-light">
+                        <i class="text-warning material-icons md-person"></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1">Total Customers</h6>
+                        <span><%=numberOfCustomers.totalCustomers  %></span>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-warning-light">
+                        <i class="text-warning material-icons md-person"></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1">Over All Discounts</h6>
+                        <span><%=overallDiscount.sum %></span>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+    <div class="mb-4">
+        <button onclick="exportToPDF()" class="btn btn-primary">Download PDF</button>
+        <button onclick="exportToExcel()" class="btn btn-success">Download Excel</button>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="salesTable">
+                    <thead>
+                        <tr>
+                            <th>Order No</th>
+                            <th>Customer Name</th>
+                            <th>Customer Email</th>
+                            <th>Product Name</th>
+                            <th>Quantity</th>
+                            <th>Product Price</th>
+                            <th>Coupon Code</th>
+                            <th>Coupon Amount</th>
+                            <th>Total Price</th>
+                            <th>Order Status</th>
+                            <th>Order Date</th>
+                            <th>Payment Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% let k = 1 %>
+                        <% salesData.forEach(data => { %>
+                            <tr>
+                                <td><%= k++  %></td>
+                                <td><%= data.user.username %></td>
+                                <td><%= data.user.email %></td>
+                                <td>
+                                    <ul>
+                                        <% data.orderedItems.forEach(item => { %>
+                                            <li><%= item.product.productName %></li>
+                                        <% }) %>
+                                    </ul>
+                                </td>
+                                <td><%= data.orderedItems.reduce((total, item) => total + item.quantity, 0) %></td>
+                                <td><%= data.totalPrice %></td>
+                                <td><%= data.couponCode %></td>
+                                <td><%= data.discount %></td>
+                                <td><%= data.finalAmount %></td>
+                                <td><span class="badge bg-success"><%=data.status  %></span></td>
+                                <td><%= data.createdOn.toLocaleDateString() %></td>
+                                <td><%= data.paymentMethod %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>                    
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="pagination-area mt-15 mb-50">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-start">
+                <li class="page-item active"><a class="page-link" href="#">01</a></li>
+                <li class="page-item"><a class="page-link" href="#">02</a></li>
+                <li class="page-item"><a class="page-link" href="#">03</a></li>
+                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+                <li class="page-item"><a class="page-link" href="#">16</a></li>
+                <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
+            </ul>
+        </nav>
+    </div>
+</section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+
+
+    <script>
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const table = document.getElementById('salesTable');
+
+            doc.setFontSize(18);
+            doc.text('Sales Report', 14, 20);
+
+            doc.setFontSize(12);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+
+            doc.autoTable({
+                html: table,
+                startY: 40
+            });
+
+            doc.save('sales-report.pdf');
+        }
+
+
+        function exportToExcel() {
+            const table = document.getElementById('salesTable');
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Sales Report" });
+
+            XLSX.writeFile(wb, 'sales-report.xlsx');
+        }
+document.getElementById('dateFilter').addEventListener('change', function() {
+    const selectedFilter = this.value;
+    const table = document.getElementById('salesTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+    
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    const yearStart = new Date(today.getFullYear(), 0, 1);
+
+    let visibleRecords = 0;
+
+    for (let row of rows) {
+        const dateCell = row.querySelector('td:nth-child(11)'); 
+        if (!dateCell) continue;
+
+
+        const dateParts = dateCell.textContent.trim().split('/');
+        if (dateParts.length !== 3) continue;
+
+
+        const orderDate = new Date(
+            parseInt(dateParts[2]), 
+            parseInt(dateParts[1]) - 1,
+            parseInt(dateParts[0])
+        );
+        orderDate.setHours(0, 0, 0, 0);
+
+        let show = true;
+        const orderTime = orderDate.getTime();
+        const todayTime = today.getTime();
+
+        switch (selectedFilter) {
+            case 'today':
+
+                show = orderDate.getDate() === today.getDate() &&
+                       orderDate.getMonth() === today.getMonth() &&
+                       orderDate.getFullYear() === today.getFullYear();
+                break;
+            case 'week':
+                show = orderTime >= weekStart.getTime() && orderTime <= todayTime;
+                break;
+            case 'month':
+                show = orderDate.getMonth() === today.getMonth() &&
+                       orderDate.getFullYear() === today.getFullYear();
+                break;
+            case 'year':
+                show = orderDate.getFullYear() === today.getFullYear();
+                break;
+            default:
+                show = true;
+        }
+        
+        row.style.display = show ? '' : 'none';
+        if (show) visibleRecords++;
+    }
+
+    const totalRecords = document.createElement('div');
+    totalRecords.className = 'mt-2 ms-2';
+    totalRecords.textContent = `Showing ${visibleRecords} records`;
+    
+    const existingCounter = document.querySelector('.filtered-counter');
+    if (existingCounter) existingCounter.remove();
+    
+    totalRecords.className = 'filtered-counter ' + totalRecords.className;
+    table.parentElement.insertBefore(totalRecords, table);
+
+    console.log('Current filter:', selectedFilter);
+    console.log('Today:', today.toLocaleDateString());
+    console.log('Week start:', weekStart.toLocaleDateString());
+    console.log('Month start:', monthStart.toLocaleDateString());
+    console.log('Year start:', yearStart.toLocaleDateString());
+});
+
+
+
+
+const debugButton = document.createElement('button');
+debugButton.textContent = 'Test Date Parse';
+debugButton.className = 'btn btn-secondary ms-2';
+debugButton.onclick = function() {
+    const table = document.getElementById('salesTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    const dateCell = rows[0].querySelector('td:nth-child(11)');
+    if (dateCell) {
+        const dateParts = dateCell.textContent.trim().split('/');
+        const orderDate = new Date(
+            parseInt(dateParts[2]), 
+            parseInt(dateParts[1]) - 1, 
+            parseInt(dateParts[0]) 
+        );
+        console.log('Sample date text:', dateCell.textContent);
+        console.log('Parsed date:', orderDate.toLocaleDateString());
+        alert(`Original: ${dateCell.textContent}\nParsed: ${orderDate.toLocaleDateString()}`);
+    }
+};
+
+document.querySelector('.mb-4').appendChild(debugButton);
+
+document.getElementById('dateFilter').dispatchEvent(new Event('change'));
+</script>
+<%- include("../../views/partials/admin/footer") %>
+<style>
+.badge {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+.table td {
+    vertical-align: middle;
+}
+.content-header {
+    margin-bottom: 30px;
+}
+.card-header {
+    padding: 1rem;
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0,0,0,.125);
+}
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.icontext {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px;
+}
+.icontext .icon {
+    position: relative;
+    margin-right: 15px;
+    margin-left: 10px;
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.bg-primary-light {
+    background-color: rgba(13, 110, 253, 0.15);
+}
+.bg-success-light {
+    background-color: rgba(40, 167, 69, 0.15);
+}
+.bg-warning-light {
+    background-color: rgba(255, 193, 7, 0.15);
+}
+.text-success {
+    color: #28a745;
+}
+.text-primary {
+    color: #0d6efd;
+}
+.text-warning {
+    color: #ffc107;
+}
+.text-sm {
+    font-size: 0.875rem;
+}
+</style>
