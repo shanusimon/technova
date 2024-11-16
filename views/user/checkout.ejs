@@ -244,7 +244,7 @@
                                                 <img src="/uploads/re-image/<%= product.productImage[0] %>"
                                                     alt="<%= product.productName %>" width="50" height="50"
                                                     class="mr-2">
-                                                <%= product.productName %> (x1)
+                                                <%= product.productName %> (x<%=quantity  %>)
                                             </td>
                                             <td>₹<%= product.salePrice.toLocaleString() %>
                                             </td>
@@ -393,10 +393,10 @@
                         selectedPaymentOption = option.value;
                     }
                 });
-                console.log("Selected Payment Option:", selectedPaymentOption); 
+                console.log("Selected Payment Option:", selectedPaymentOption);
                 const totalPrice = parseFloat(variable.replace(/,/g, ''));
                 if (totalPrice > 1000 && selectedPaymentOption === 'COD') {
-                    console.log("Condition met for SweetAlert"); 
+                    console.log("Condition met for SweetAlert");
                     Swal.fire({
                         icon: 'warning',
                         title: 'Payment Option Not Allowed',
@@ -423,18 +423,43 @@
                 }
             }
 
-            async function openRazorpay(amount) {
-                amount = parseFloat(amount);
+            async function openRazorpay() {
                 try {
-                    const res = await fetch('/create-order', {
+                    const orderData = {
+                        cart: document.querySelector('input[name="cart"]').value,
+                        totalPrice: document.getElementById('totalamount').value,
+                        payment_option: 'Online',
+                        addressId: document.getElementById('addressId').value,
+                        singleProduct: document.querySelector('input[name="singleProduct"]') ? document.querySelector('input[name="singleProduct"]').value : null,
+                        discount: document.getElementById('discountInput').value,
+                        totalAmount: document.getElementById('productAmount').value,
+                        couponCode: document.getElementById('couponCode').value
+                    };
+
+                    const placeOrderResponse = await fetch('/place-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(orderData)
+                    });
+
+                    if (!placeOrderResponse.ok) {
+                        throw new Error("Order placement failed");
+                    }
+
+                    const placeOrderData = await placeOrderResponse.json();
+
+                    // Step 2: Use placed order's ID and amount to create a Razorpay order
+                    const amount = parseFloat(placeOrderData.finalAmount);
+                    const createOrderResponse = await fetch('/create-order', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ amount, currency: 'INR' })
                     });
-                    const order = await res.json();
+
+                    const order = await createOrderResponse.json();
 
                     const options = {
-                        key: 'rzp_test_7ar9vLGVnICf6E',
+                        key: 'rzp_test_7ar9vLGVnICf6E', 
                         amount: order.amount,
                         currency: order.currency,
                         name: 'Technova',
@@ -442,39 +467,34 @@
                         order_id: order.id,
                         handler: async function (response) {
                             try {
-                                const orderData = {
-                                    cart: document.querySelector('input[name="cart"]').value,
-                                    totalPrice: document.getElementById('totalamount').value,
-                                    payment_option: 'Online',
-                                    addressId: document.getElementById('addressId').value,
-                                    singleProduct: document.querySelector('input[name="singleProduct"]') ? document.querySelector('input[name="singleProduct"]').value : null,
-                                    discount: document.getElementById('discountInput').value,
-                                    totalAmount: document.getElementById('productAmount').value,
-                                    couponCode: document.getElementById('couponCode').value
-                                };
-                                const placeOrderResponse = await fetch('/place-order', {
+                                const updateResponse = await fetch('/update-order', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(orderData)
+                                    body: JSON.stringify({
+                                        orderId: placeOrderData.orderId,
+                                        paymentId: response.razorpay_payment_id,
+                                        razorpayOrderId: response.razorpay_order_id,
+                                        signature: response.razorpay_signature,
+                                        status: 'Completed'
+                                    })
                                 });
 
-                                if (placeOrderResponse.ok) {
-                                    const data = await placeOrderResponse.json();
-                                    window.location.href = `/payment-successful?id=${data.orderId}`;
+                                if (updateResponse.ok) {
+                                    window.location.href = `/payment-successful?id=${placeOrderData.orderId}`;
                                 } else {
                                     Swal.fire({
                                         icon: 'error',
-                                        title: 'Order Placement Failed',
-                                        text: 'There was an error placing your order. Please try again.',
+                                        title: 'Order Update Failed',
+                                        text: 'Payment was successful, but updating the order failed. Please contact support.',
                                         confirmButtonColor: '#39b4ac',
                                     });
                                 }
                             } catch (error) {
-                                console.error("Error placing order:", error);
+                                console.error("Error updating order:", error);
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Order Placement Error',
-                                    text: 'Payment was successful, but there was an error placing your order. Please contact support.',
+                                    title: 'Order Update Error',
+                                    text: 'Payment was successful, but there was an error updating your order. Please contact support.',
                                     confirmButtonColor: '#39b4ac',
                                 });
                             }
@@ -483,26 +503,48 @@
                     };
 
                     const rzp = new Razorpay(options);
-                    rzp.on('payment.failed', function (response) {
+
+
+                    rzp.on('payment.failed', async function (response) {
+                        console.log("ORder CAnceled")
                         Swal.fire({
                             icon: 'error',
                             title: 'Payment Failed',
                             text: 'The payment process failed. Please try again.',
                             confirmButtonColor: '#39b4ac',
                         });
-                        console.error(response.error);
+
+
+                        try {
+                            await fetch('/update-order', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    orderId: placeOrderData.orderId,
+                                    status: 'Payment Failed',
+                                    paymentError: response.error 
+                                })
+                            });
+                        } catch (error) {
+                            console.error("Error updating order to 'Payment Failed':", error);
+                        }
+
+                        console.error("Payment failed:", response.error);
                     });
+
                     rzp.open();
                 } catch (error) {
-                    console.error("Error creating Razorpay order:", error);
+                    console.error("Error during order placement or payment initialization:", error);
                     Swal.fire({
                         icon: 'error',
-                        title: 'Payment Initialization Failed',
-                        text: 'There was an error initializing the payment. Please try again.',
+                        title: 'Order or Payment Error',
+                        text: 'There was an error processing your order. Please try again.',
                         confirmButtonColor: '#39b4ac',
                     });
                 }
             }
+
+
 
             async function applyCoupon(totalPrice) {
                 const couponValue = document.getElementById('couponCode').value.trim();

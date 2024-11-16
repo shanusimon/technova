@@ -115,9 +115,9 @@
                         <% let k = 1 %>
                         <% salesData.forEach(data => { %>
                             <tr>
-                                <td><%= k++  %></td>
-                                <td><%= data.user.username %></td>
-                                <td><%= data.user.email %></td>
+                                <td><%= k++ %></td>
+                                <td><%= data.user ? data.user.username : "N/A" %></td>
+                                <td><%= data.user ? data.user.email : "N/A" %></td>
                                 <td>
                                     <ul>
                                         <% data.orderedItems.forEach(item => { %>
@@ -127,15 +127,15 @@
                                 </td>
                                 <td><%= data.orderedItems.reduce((total, item) => total + item.quantity, 0) %></td>
                                 <td><%= data.totalPrice %></td>
-                                <td><%= data.couponCode %></td>
+                                <td><%= data.couponCode ? data.couponCode : "N/A" %></td>
                                 <td><%= data.discount %></td>
                                 <td><%= data.finalAmount %></td>
-                                <td><span class="badge bg-success"><%=data.status  %></span></td>
+                                <td><span class="badge bg-success"><%= data.status %></span></td>
                                 <td><%= data.createdOn.toLocaleDateString() %></td>
                                 <td><%= data.paymentMethod %></td>
                             </tr>
                         <% }); %>
-                    </tbody>                    
+                    </tbody>                                    
                 </table>
             </div>
         </div>

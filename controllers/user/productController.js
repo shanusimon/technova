@@ -20,6 +20,8 @@ const getSuccesspage = async (req,res)=>{
   
 }
 
+
+
 const invoiceDownload = async (req, res) => {
   try {
     const orderId = req.query.id;
@@ -133,6 +135,7 @@ const invoiceDownload = async (req, res) => {
 const getCheckOutPage = async (req, res) => {
     try {
       const user = req.session.user;
+    
       if (!user) {
         return res.redirect('/login');
       }
@@ -149,12 +152,14 @@ const getCheckOutPage = async (req, res) => {
       let totalPrice = 0;
   
       if (req.query.id) {
+        const quantity = req.query.quantity
         const product = await Product.findById(req.query.id);
         if (!product) {
           return res.redirect('/page-not-found');
         }
-        totalPrice = product.salePrice;
-        return res.render('checkout', { cart: null, product, address: addresses, totalPrice,Notusedcoupon });
+        totalPrice = product.salePrice * quantity;
+        console.log(quantity)
+        return res.render('checkout', { cart: null, product, address: addresses, totalPrice,Notusedcoupon,quantity });
       } else {
         const cartItems = await Cart.findOne({ userId: user }).populate('items.productId');
         if (!cartItems) {
@@ -175,9 +180,7 @@ const getCheckOutPage = async (req, res) => {
     try {
         let { cart, totalPrice,couponCode,payment_option,discount,addressId, singleProduct } = req.body;
         const userId = req.session.user;
-        console.log(`total Price ${totalPrice}, Discount ${discount},Coupon Code ${couponCode}`);
         let orderedItems = [];
-
         if (singleProduct) {
             const product = JSON.parse(singleProduct);
             orderedItems.push({
@@ -223,8 +226,8 @@ const getCheckOutPage = async (req, res) => {
             orderData.status = 'Pending';
             orderData.paymentStatus = 'Not Applicable';
         } else if (payment_option === 'Online') {
-            orderData.status = 'Shipped';
-            orderData.paymentStatus = 'Completed';
+            orderData.status = 'Pending';
+            orderData.paymentStatus = 'Pending';
         }
 
         if (discount !== 0) {
@@ -238,9 +241,16 @@ const getCheckOutPage = async (req, res) => {
         await newOrder.save();
         
         if (payment_option === 'COD') {
+          if (singleProduct) {
+            const product = JSON.parse(singleProduct);
+            const data = await Product.findByIdAndUpdate(product._id, {
+                $inc: { quantity: -1 }
+            });
+            console.log(`the data is ${data}`)
+            }        
             res.redirect(`/payment-successful?id=${newOrder._id}`);
         } else {
-            res.json({ orderId: newOrder._id });
+            res.json({ orderId: newOrder._id,finalAmount:finAmount});
         }
 
     } catch (error) {
@@ -254,5 +264,5 @@ module.exports = {
   getCheckOutPage,
   placeOrder,
   getSuccesspage,
-  invoiceDownload
+  invoiceDownload,
 };

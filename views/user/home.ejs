@@ -263,23 +263,37 @@
                             <div class="product-cart-wrap">
                                 <div class="product-img-action-wrap">
                                     <div class="product-img">
-                                        <a href="/productDeatils?id=<%= products[i]._id %>">
-                                            <img src="/uploads/re-image/<%= products[i].productImage[0] %>" alt="<%= products[i].productName %>">
-                                        </a>
+                                        <% if (products[i].quantity > 0) { %>
+                                            <a href="/productDeatils?id=<%= products[i]._id %>">
+                                                <img src="/uploads/re-image/<%= products[i].productImage[0] %>" alt="<%= products[i].productName %>">
+                                            </a>
+                                        <% } else { %>
+                                            <img src="/uploads/re-image/<%= products[i].productImage[0] %>" alt="<%= products[i].productName %>" style="opacity: 0.5;">
+                                        <% } %>
                                     </div>
                                 </div>
                                 <div class="product-content-wrap">
                                     <h6><%= products[i].productName %></h6>
                                     <h6>₹ <%= products[i].salePrice.toLocaleString() %></h6>
-                                    <h6 style="color: green">Stocks: <%= products[i].quantity %></h6>
+                                    <% if (products[i].quantity > 0) { %>
+                                        <h6 style="color: green">Stocks: <%= products[i].quantity %></h6>
+                                    <% } else { %>
+                                        <h6 style="color: red">Out of Stock</h6>
+                                    <% } %>
                                 </div>
                                 <div class="product-action-1">
-                                    <a aria-label="Add To Cart" class="action-btn" href="/addcart?id=<%= products[i]._id %>">
-                                        <i class="fi-rs-shopping-bag-add"></i>
-                                    </a>
+                                    <% if (products[i].quantity > 0) { %>
+                                        <a aria-label="Add To Cart" class="action-btn" href="/addcart?id=<%= products[i]._id %>">
+                                            <i class="fi-rs-shopping-bag-add"></i>
+                                        </a>
+                                    <% } else { %>
+                                        <a aria-label="Out of Stock" class="action-btn disabled" style="pointer-events: none; color: gray;">
+                                            <i class="fi-rs-shopping-bag-add"></i>
+                                        </a>
+                                    <% } %>
                                 </div>
                             </div>
-                        <% } %>
+                        <% } %>                        
                     </div>                        
                 </div>
             </div>                

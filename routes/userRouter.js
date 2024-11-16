@@ -113,7 +113,7 @@ router.post('/removeCoupon',couponController.removeCoupon);
 
 //payment 
 router.post('/create-order',paymentController.createRazorpay);
-router.post('/update-order-status/:orderId',paymentController.updateOrderStatus)
+router.post('/update-order',paymentController.updateOrder)
 
 //wallet
 router.get('/wallet',walletController.getWalletInfo);

@@ -57,7 +57,7 @@
                                     <% }) %>
                                 </td>
                                 <td><%= order.createdOn.toDateString() %></td>
-                                <td><%= order.user.username %></td> 
+                                <td><%= order.user ? order.user.username : 'Unknown User' %></td> <!-- Check if order.user exists -->
                                 <td><%= order.totalPrice %></td> 
                                 <td>
                                     <select name="status" data-current-status="<%= order.status %>" onchange="updateStatus('<%= order._id %>', this)">
@@ -72,7 +72,7 @@
                                 </td>                                
                             </tr>
                         <% }) %>
-                    </tbody>
+                    </tbody>                    
                 </table>
             </div> <!-- table-responsive //end -->
         </div> <!-- card-body end// -->

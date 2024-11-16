@@ -41,6 +41,7 @@ const showSaleReport = async (req,res) =>{
         let totalsales = sumOfSales.pop();
         let counts = totalOrders.pop();
         let numberOfCustomers = totalCustomers.pop();
+        console.log(salesData)
         res.render("salesreport",{
             salesData,
             sumOfSales:totalsales,
