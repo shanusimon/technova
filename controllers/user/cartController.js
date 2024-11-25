@@ -26,7 +26,8 @@ const getCart = async (req,res) => {
 
 const saveToCart = async (req, res) => {
     try{
-    if(!req.session.user){
+     if(req.session.user){
+        console.log("hello");
             const userId = req.session.user._id;
             const productId = req.query.id;
     
