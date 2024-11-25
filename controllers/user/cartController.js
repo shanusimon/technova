@@ -25,48 +25,51 @@ const getCart = async (req,res) => {
 }
 
 const saveToCart = async (req, res) => {
-    try {
-        const userId = req.session.user._id;
-        const productId = req.query.id;
-
-        if (!userId) {
-            return res.redirect('/login');
-        }
-
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).send("Product not found");
-        }
-
-        const quantity = parseInt(req.body.quantity);
-        const totalPrice = quantity * product.salePrice;
-
-        const cartDoc = await Cart.findOne({ userId: userId });
-
-        if (cartDoc) {
-            const existingItemIndex = cartDoc.items.findIndex(item => item.productId.toString() === productId);
-
-            if (existingItemIndex >= 0) {
-                cartDoc.items[existingItemIndex].quantity += quantity;
-                cartDoc.items[existingItemIndex].totalPrice += totalPrice;
-            } else {
-                cartDoc.items.push({ productId, quantity, price: product.salePrice, totalPrice });
+    try{
+    if(!req.session.user){
+            const userId = req.session.user._id;
+            const productId = req.query.id;
+    
+            if (!userId) {
+                return res.redirect('/login');
             }
-            await cartDoc.save();
-        } else {
-            const newCart = new Cart({
-                userId: userId,
-                items: [{ productId, quantity, price: product.salePrice, totalPrice }]
-            });
-            await newCart.save();
-        }
-        console.log("Redirecting to cart");
-        return res.redirect('/cart');
-
-    } catch (error) {
-        console.error("Error saving to cart:", error);
-        res.status(500).send("Internal Server Error");
-    }
+    
+            const product = await Product.findById(productId);
+            if (!product) {
+                return res.status(404).send("Product not found");
+            }
+    
+            const quantity = parseInt(req.body.quantity);
+            const totalPrice = quantity * product.salePrice;
+    
+            const cartDoc = await Cart.findOne({ userId: userId });
+    
+            if (cartDoc) {
+                const existingItemIndex = cartDoc.items.findIndex(item => item.productId.toString() === productId);
+    
+                if (existingItemIndex >= 0) {
+                    cartDoc.items[existingItemIndex].quantity += quantity;
+                    cartDoc.items[existingItemIndex].totalPrice += totalPrice;
+                } else {
+                    cartDoc.items.push({ productId, quantity, price: product.salePrice, totalPrice });
+                }
+                await cartDoc.save();
+            } else {
+                const newCart = new Cart({
+                    userId: userId,
+                    items: [{ productId, quantity, price: product.salePrice, totalPrice }]
+                });
+                await newCart.save();
+            }
+            console.log("Redirecting to cart");
+            return res.redirect('/cart');
+    }else{
+        res.redirect('/login')
+}
+} catch (error) {
+    console.error("Error saving to cart:", error);
+    res.status(500).send("Internal Server Error");
+}
 }
 
 const updateQuantity = async (req, res) => {
