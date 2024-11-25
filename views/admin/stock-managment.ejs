@@ -54,6 +54,17 @@
 <script>
     function updateStock(productId){
         const newStock = document.getElementById(`updateStock_${productId}`).value;
+        if(newStock<0){
+            Swal.fire({
+                title:'Negative Value',
+                icon:'warning',
+                text:"The Stock value cannot be negative",
+                confirmButtonColor:'#3085d6',
+                confirmButtonText:'OK'
+            })
+            document.getElementById(`updateStock_${productId}`).value = "";
+            return false
+        }
 
         fetch('/admin/update-stock',{
             method:"POST",

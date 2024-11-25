@@ -11,6 +11,7 @@ const orderController = require("../controllers/admin/orderController");
 const stockController = require("../controllers/admin/stockController");
 const couponController = require("../controllers/admin/couponController");
 const salesController = require("../controllers/admin/salesController");
+const returnController = require("../controllers/admin/returnController");
 const multer = require("multer");
 const storage = require("../helpers/multer");
 const uploads = multer({storage:storage});
@@ -80,5 +81,12 @@ router.post('/delete',adminAuth,couponController.deleteCoupon);
 //sales Report
 router.get('/salesreport',adminAuth,salesController.showSaleReport);
 
+//return approvals
+router.get('/return-approvals',adminAuth,returnController.getReturnApprovals)
+router.post('/returnDataUpdate',adminAuth,returnController.returnUpdate);
+
+router.use((req, res) => {
+    res.redirect("/admin"); 
+});
 
 module.exports = router;

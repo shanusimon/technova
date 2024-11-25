@@ -1,58 +1,53 @@
 const User = require("../../models/userSchema");
 
-// const customerInfo = async (req,res) => {
-//     try {
-//         let search ="";
-//         if(req.query.search){
-//             search = req.query.search;
-//         }
-//         let page = 1;
-//         if(req.query.page){
-//             page=req.query.page;
-//         }
-//         const limit =3;
-//         const userData = await User.find({
-//             isAdmin:false,
-//             $or:[
-//                 {name:{$regex:".*"+search+".*"}},
-//                 {email:{$regex:".*"+search+".*"}}
-//             ],
-//         })
-//         .limit(limit*1)
-//         .skip((page-1)*limit)
-//         .exec();
 
-//         const count = await User.find({
-//             isAdmin:false,
-//             $or:[
-//                 {name:{$regex:".*"+search+".*"}},
-//                 {email:{$regex:".*"+search+".*"}}
-//             ],
-//         }).countDocuments();
-//         res.render("customers",{
-//             data:userData,
-//             totalPages:Math.ceil(count/limit),
-//             currentPage:page
-//         })
-
-//     } catch (error) {
-        
-//     }
-    
-// }
 const customerInfo = async (req, res) => {
     try {
-        const userData = await User.find({ isAdmin: false });
+        const page = parseInt(req.query.page) || 1; 
+        const limit = parseInt(req.query.limit) || 10; 
+        const skip = (page - 1) * limit;
 
+        // Capture the search query from the request
+        const searchQuery = req.query.search || '';
+
+        // Create a filter object for the search
+        const filter = {
+            isAdmin: false, // Only non-admin users
+            $or: [
+                { username: { $regex: searchQuery, $options: 'i' } },
+                { email: { $regex: searchQuery, $options: 'i' } },
+                { phone: { $regex: searchQuery, $options: 'i' } },
+            ],
+        };
+
+        // Fetch filtered and paginated user data
+        const userData = await User.find(filter)
+            .skip(skip)
+            .limit(limit);
+
+        // Count total documents matching the search query
+        const totalDocuments = await User.countDocuments(filter);
+
+        // Calculate total pages
+        const totalPages = Math.ceil(totalDocuments / limit);
+
+        // Render the results
         res.render("customers", {
-            data: userData
+            data: userData,
+            currentPage: page,
+            totalPages: totalPages,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+            nextPage: page + 1,
+            previousPage: page - 1,
+            search: searchQuery, // Pass the search query to the template
         });
-
     } catch (error) {
         console.log(error);
         res.redirect("/pageerror");
     }
-}
+};
+
 
 
 

@@ -37,6 +37,10 @@ const orderSchema = new Schema({
         type: Number,
         default: 0
     },
+    deliveryCharge: {
+        type: Number,
+        required: true
+    },
     finalAmount: {
         type: Number,
         required: true
@@ -60,6 +64,8 @@ const orderSchema = new Schema({
             "Delivered",
             "Cancelled",
             "Return Request",
+            "Return Request Approved",
+            "Return Request Rejected",
             "Returned",
             "Paid"
         ]

@@ -79,34 +79,49 @@ const addProducts = async (req,res) => {
 const getAllProducts = async (req, res) => {
     try {
         const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
-        const productData = await Product.find(
-            // {
-            // $or: [
-            //     { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
-            //     { brand: { $regex: new RegExp(".*" + search + ".*", "i") } },
-            // ]
-        // }
-        ).populate('category');
+        const filter = search
+            ? {
+                $or: [
+                    { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
+                    { brand: { $regex: new RegExp(".*" + search + ".*", "i") } },
+                ],
+            }
+            : {};
+
+        const productData = await Product.find(filter)
+            .populate('category')
+            .skip(skip)
+            .limit(limit);
+
+        const totalProducts = await Product.countDocuments(filter);
+        const totalPages = Math.ceil(totalProducts / limit);
 
         const category = await Category.find({ isListed: true });
         const brand = await Brand.find({ isBlocked: false });
 
         if (category && brand) {
             res.render("products", {
-                data: productData,   
-                cat: category,       
-                brand: brand
+                data: productData,
+                cat: category,
+                brand: brand,
+                currentPage: page,
+                totalPages: totalPages,
+                search: search, 
             });
         } else {
-            res.render("page-404"); 
+            res.render("page-404");
         }
-
     } catch (error) {
         console.error("Error fetching products:", error);
         res.status(500).send("Internal Server Error");
     }
-}
+};
+
+
 
 const addProductOffer = async (req, res) => {
     try {
@@ -255,9 +270,6 @@ const editProduct = async (req,res) => {
 
 const deleteSingleImage = async (req, res) => {
     try {
-        // console.log("Deleting image...");
-
-        // console.log(req.body);
         const { imageNameToServer, productId } = req.body;
         console.log(imageNameToServer,productId);
         const product = await Product.findByIdAndUpdate(

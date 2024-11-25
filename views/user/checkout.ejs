@@ -221,11 +221,16 @@
                                     </div>
                                 </div>
                                 <% }); %>
+                                    <form action="/available-coupons" method="GET">
+                                        <button type="submit" class="btn btn-primary mt-3">Show Available
+                                            Coupons</button>
+                                    </form>
                                     <% } else { %>
                                         <p class="alert alert-info">No addresses available. Please add an address to
                                             continue.</p>
                                         <% } %>
                     </div>
+
 
                     <div class="col-md-6">
                         <div class="order_review">
@@ -244,7 +249,7 @@
                                                 <img src="/uploads/re-image/<%= product.productImage[0] %>"
                                                     alt="<%= product.productName %>" width="50" height="50"
                                                     class="mr-2">
-                                                <%= product.productName %> (x<%=quantity  %>)
+                                                <%= product.productName %> (x<%=quantity %>)
                                             </td>
                                             <td>₹<%= product.salePrice.toLocaleString() %>
                                             </td>
@@ -275,12 +280,21 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <th>Delivery Charge</th>
+                                        <td id="delivery-charge">₹40</td>
+                                    </tr>
+                                    <tr>
                                         <th>Discount</th>
                                         <td id="discount">₹0</td>
                                     </tr>
                                     <tr>
+                                        <th>GST</th>
+                                        <td id="GST">₹<%= (totalPrice * 0.18).toLocaleString() %> (18%)</td>
+                                    </tr>
+                                    <tr>
                                         <th>Total</th>
-                                        <td id="totalPriceAfterDiscount">₹<%= totalPrice.toLocaleString() %>
+                                        <td id="totalPriceAfterDiscount">
+                                            ₹<%= (totalPrice + 40 + (totalPrice * 0.18)).toLocaleString() %>
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -310,9 +324,9 @@
                                             placeholder="Enter coupon code">
                                         <div class="input-group-append">
                                             <button class="btn btn-outline-secondary" type="button" id="applyCouponbtn"
-                                                onclick="applyCoupon('<%= totalPrice %>')">Apply</button>
+                                            onclick="applyCoupon(document.getElementById('totalPriceAfterDiscount').textContent)">Apply</button>
                                             <button class="btn btn-outline-secondary" type="button" id="removeCouponbtn"
-                                                onclick="removeCoupon('<%= totalPrice %>')"
+                                                onclick="removeCoupon(document.getElementById('totalPriceAfterDiscount').textContent)"
                                                 style="display: none;">Remove</button>
                                         </div>
                                     </div>
@@ -346,7 +360,11 @@
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+   
         <script>
+        if (performance.navigation.type === performance.navigation.TYPE_BACK_FORWARD) {
+            window.location.reload();
+        }
             let variable = 0;
             function syncDiscount() {
                 const discountValue = document.getElementById('discount').innerText.replace('₹', '');
@@ -355,7 +373,6 @@
                 document.getElementById('productAmount').value = totalPrice;
                 variable = document.getElementById('productAmount').value;
             }
-
             function validateAndOpenRazorpay(amount) {
                 syncDiscount();
                 if (validateAddress()) {
@@ -448,7 +465,6 @@
 
                     const placeOrderData = await placeOrderResponse.json();
 
-                    // Step 2: Use placed order's ID and amount to create a Razorpay order
                     const amount = parseFloat(placeOrderData.finalAmount);
                     const createOrderResponse = await fetch('/create-order', {
                         method: 'POST',
@@ -459,7 +475,7 @@
                     const order = await createOrderResponse.json();
 
                     const options = {
-                        key: 'rzp_test_7ar9vLGVnICf6E', 
+                        key: 'rzp_test_7ar9vLGVnICf6E',
                         amount: order.amount,
                         currency: order.currency,
                         name: 'Technova',
@@ -522,7 +538,7 @@
                                 body: JSON.stringify({
                                     orderId: placeOrderData.orderId,
                                     status: 'Payment Failed',
-                                    paymentError: response.error 
+                                    paymentError: response.error
                                 })
                             });
                         } catch (error) {
@@ -547,6 +563,8 @@
 
 
             async function applyCoupon(totalPrice) {
+                let numericPrice = totalPrice.replace('₹', '').replace(/,/g, '').trim();
+                numericPrice = parseFloat(numericPrice);
                 const couponValue = document.getElementById('couponCode').value.trim();
                 if (!couponValue) {
                     Swal.fire({
@@ -562,7 +580,7 @@
                     const response = await fetch('/applyCoupon', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ couponCode: couponValue, totalPrice: parseFloat(totalPrice) })
+                        body: JSON.stringify({ couponCode: couponValue, totalPrice:numericPrice })
                     });
 
                     const data = await response.json();
@@ -571,14 +589,14 @@
                         document.getElementById('removeCouponbtn').style.display = 'inline-block';
                         document.getElementById('applyCouponbtn').style.display = 'none';
 
-                        const originalSubtotal = parseFloat(totalPrice);
+                        const originalSubtotal = parseFloat(numericPrice);
                         const newTotal = parseFloat(data.newSubtotal);
-                        const discountAmount = originalSubtotal - newTotal;
+                        const discountAmount = parseFloat(data.discountAmount);
 
-                        document.getElementById('subtotal').textContent = `₹${originalSubtotal.toLocaleString()}`;
+
+                      
                         document.getElementById('discount').textContent = `₹${discountAmount.toLocaleString()}`;
                         document.getElementById('totalPriceAfterDiscount').textContent = `₹${newTotal.toLocaleString()}`;
-                        document.getElementById('totalamount').value = newTotal;
 
                         Swal.fire({
                             icon: 'success',
@@ -606,11 +624,15 @@
             }
 
             async function removeCoupon(originalPrice) {
+                let numericPrice = originalPrice.replace('₹', '').replace(/,/g, '').trim();
+                numericPrice = parseFloat(numericPrice);
+                let discountValue = document.getElementById("discount").textContent;
+                let numericDis = discountValue.replace('₹', '').replace(/,/g, '').trim();
                 try {
                     const response = await fetch('/removeCoupon', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ originalPrice: parseFloat(originalPrice) })
+                        body: JSON.stringify({ originalPrice: numericPrice })
                     });
 
                     const data = await response.json();
@@ -619,18 +641,17 @@
                         document.getElementById('removeCouponbtn').style.display = 'none';
                         document.getElementById('applyCouponbtn').style.display = 'inline-block';
 
-                        const originalPriceFloat = parseFloat(originalPrice);
-
-                        document.getElementById('subtotal').textContent = `₹${originalPriceFloat.toLocaleString()}`;
+                        const originalPriceFloat = parseFloat(data.subtotal);
+                        let newTotal = originalPriceFloat + Number(numericDis);
+                       
                         document.getElementById('discount').textContent = "₹0";
-                        document.getElementById('totalPriceAfterDiscount').textContent = `₹${originalPriceFloat.toLocaleString()}`;
-                        document.getElementById('totalamount').value = originalPrice;
+                        document.getElementById('totalPriceAfterDiscount').textContent = `₹${newTotal}`
                         document.getElementById('couponCode').value = '';
 
                         Swal.fire({
                             icon: 'success',
                             title: 'Coupon Removed',
-                            text: `Price reverted to original amount: ₹${originalPriceFloat.toLocaleString()}`,
+                            text: `Price reverted to original amount: ₹${newTotal.toLocaleString()}`,
                             confirmButtonColor: '#39b4ac',
                         });
                     } else {

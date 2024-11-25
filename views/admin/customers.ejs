@@ -1,14 +1,20 @@
 <%- include("../partials/admin/header")  %>
 
 <div class="container mt-4">
-    <form class="searchform mb-4">
+    <form class="searchform mb-4" method="GET" action="/admin/customers">
         <div class="input-group">
-            <input list="search_terms" type="text" class="form-control" placeholder="Search customers">
-            <button class="btn btn-light bg" type="button"> 
-                <i class="material-icons md-search"></i> 
+            <input 
+                type="text" 
+                name="search" 
+                class="form-control" 
+                placeholder="Search customers" 
+                value="<%= search %>">
+            <button class="btn btn-light bg" type="submit">
+                <i class="material-icons md-search"></i>
             </button>
         </div>
     </form>
+    
     
     <div class="table-responsive">
         <table class="table table-bordered table-hover">
@@ -38,7 +44,27 @@
             </tbody>
         </table>
     </div>
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <% if (hasPreviousPage) { %>
+                <li class="page-item">
+                    <a class="page-link" href="?search=<%= search %>&page=<%= previousPage %>&limit=10">Previous</a>
+                </li>
+            <% } %>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                    <a class="page-link" href="?search=<%= search %>&page=<%= i %>&limit=10"><%= i %></a>
+                </li>
+            <% } %>
+            <% if (hasNextPage) { %>
+                <li class="page-item">
+                    <a class="page-link" href="?search=<%= search %>&page=<%= nextPage %>&limit=10">Next</a>
+                </li>
+            <% } %>
+        </ul>
+    </nav>    
 </div>
+
 <br>
 <br>
 <br>

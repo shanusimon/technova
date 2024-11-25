@@ -5,33 +5,38 @@
   <form id="couponForm">
     <div class="form-group">
       <label for="code">Code</label>
-      <input type="text" class="form-control" id="code" name="code" required>
+      <input type="text" class="form-control" id="code" name="code" >
+      <small id="codeError" class="text-danger"></small>
     </div>
-    
+
     <div class="form-group">
       <label for="price">Discount Price (%)</label>
-      <input type="number" class="form-control" id="price" name="price" required min="0" max="100">
-      <small class="form-text text-muted">Enter a percentage value (0 - 100).</small>
+      <input type="number" class="form-control" id="price" name="price"  min="0" max="100">
+      <small id="priceError" class="text-danger"></small>
     </div>
 
     <div class="form-group">
       <label for="minimumAmount">Minimum Amount</label>
-      <input type="number" class="form-control" id="minimumAmount" name="minimumAmount" required>
+      <input type="number" class="form-control" id="minimumAmount" name="minimumAmount" >
+      <small id="minAmountError" class="text-danger"></small>
     </div>
 
     <div class="form-group">
       <label for="maximumAmount">Maximum Amount</label>
-      <input type="number" class="form-control" id="maximumAmount" name="maximumAmount" required>
+      <input type="number" class="form-control" id="maximumAmount" name="maximumAmount" >
+      <small id="maxAmountError" class="text-danger"></small>
     </div>
 
     <div class="form-group">
       <label for="createdOn">Created On</label>
-      <input type="date" class="form-control" id="createdOn" name="createdOn" required>
+      <input type="date" class="form-control" id="createdOn" name="createdOn" >
+      <small id="createdOnError" class="text-danger"></small>
     </div>
 
     <div class="form-group">
       <label for="endOn">End On</label>
-      <input type="date" class="form-control" id="endOn" name="endOn" required>
+      <input type="date" class="form-control" id="endOn" name="endOn" >
+      <small id="endOnError" class="text-danger"></small>
     </div>
 
     <button type="submit" class="btn btn-primary mt-3">Add Coupon</button>
@@ -40,56 +45,94 @@
   <br>
   <br>
 </div>
+
 <script>
-  document.getElementById('couponForm').addEventListener('submit',async (event) => {
+  document.getElementById('couponForm').addEventListener('submit', async (event) => {
     event.preventDefault();
+
+   
+    const errorFields = ['codeError', 'priceError', 'minAmountError', 'maxAmountError', 'createdOnError', 'endOnError'];
+    errorFields.forEach(id => document.getElementById(id).innerText = '');
+
+    const code = document.getElementById('code');
+    const price = document.getElementById('price');
+    const minimumAmount = document.getElementById('minimumAmount');
+    const maximumAmount = document.getElementById('maximumAmount');
+    const createdOn = document.getElementById('createdOn');
+    const endOn = document.getElementById('endOn');
+
+    let isValid = true;
+
+    if (!code.value.trim()) {
+      document.getElementById('codeError').innerText = "Coupon code is required.";
+      isValid = false;
+    }
+
+    if (price.value === '' || price.value < 0 || price.value > 100) {
+      document.getElementById('priceError').innerText = "Discount price must be between 0 and 100.";
+      isValid = false;
+    }
+
+    if (minimumAmount.value === '') {
+      document.getElementById('minAmountError').innerText = "Minimum amount is required.";
+      isValid = false;
+    }
+
+    if (maximumAmount.value === '') {
+      document.getElementById('maxAmountError').innerText = "Maximum amount is required.";
+      isValid = false;
+    } else if (Number(minimumAmount.value) > Number(maximumAmount.value)) {
+      document.getElementById('minAmountError').innerText = "Minimum amount cannot be greater than maximum amount.";
+      isValid = false;
+    }
+
+    if (!createdOn.value) {
+      document.getElementById('createdOnError').innerText = "Creation date is required.";
+      isValid = false;
+    }
+
+    if (!endOn.value) {
+      document.getElementById('endOnError').innerText = "End date is required.";
+      isValid = false;
+    } else if (new Date(createdOn.value) >= new Date(endOn.value)) {
+      document.getElementById('endOnError').innerText = "End date must be after the creation date.";
+      isValid = false;
+    }
+
+    if (!isValid) {
+      return; 
+    }
+
 
     const form = document.getElementById('couponForm'); 
     const formData = new FormData(form);
     const formObject = {};
-    formData.forEach((value,key)=>{
+    formData.forEach((value, key) => {
       formObject[key] = value;
-    })
-    
+    });
+
     try {
-      const response = await fetch('/admin/add-coupons',{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json'
+      const response = await fetch('/admin/add-coupons', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(formObject)
-        })
-
-        //handle response 
-
-        const result = await response.json();
-
-        if(response.ok){
-          Swal.fire({
-            title:"Coupon Added",
-            text: result.message + (result.isActive ? " (Active)" : " (Inactive)"),
-            icon:"success",
-            confirmButtonText:"OK"
-          })
-        }else{
-          Swal.fire({
-            title:"Error!",
-            text:result.message,
-            icon:"error",
-            confirmButtonText:'OK'
-          })
-        }
-    } catch (error) {
-       Swal.fire({
-        title: "Error!",
-        text: "An unexpected error occurred. Please try again later.",
-        icon: "error",
-        confirmButtonText: "OK"
       });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("Coupon added successfully!"); 
+        form.reset(); 
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      alert("An unexpected error occurred. Please try again later.");
       console.error("Error:", error);
     }
-  }
-  )
+  });
 </script>
 
 <%- include("../../views/partials/admin/footer") %>

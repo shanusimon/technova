@@ -9,7 +9,7 @@
                 <div class="col-12">
                     <h2 class="text-center text-primary mb-4 text-success">Your Wallet</h2>
                     <div class="wallet-info d-flex justify-content-between align-items-center p-4 bg-light rounded shadow-sm">
-                        <h4 class="font-weight-bold mb-0 text-success">Balance: $<%= walletData.balance.toFixed(2) %></h4>
+                        <h4 class="font-weight-bold mb-0 text-success">Balance: ₹<%= walletData.balance.toFixed(2) %></h4>
                         <button class="btn btn-outline-primary px-4" onclick="addFunds()">Add Funds</button>
                     </div>
                     
@@ -36,7 +36,7 @@
                                             <td class="<%= transaction.type%>">
                                                 <%= transaction.type%>
                                             </td>
-                                            <td class="font-weight-bold">$<%= transaction.amount.toFixed(2) %></td>
+                                            <td class="font-weight-bold">₹<%= transaction.amount.toFixed(2) %></td>
                                             <td><%= transaction.description || 'No description' %></td>
                                         </tr>
                                     <% }) %>

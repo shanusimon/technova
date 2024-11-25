@@ -1,6 +1,22 @@
+const { CURSOR_FLAGS } = require("mongodb");
 const Coupons = require("../../models/couponSchema");
 const User = require("../../models/userSchema");
 
+
+
+const getAvailableCoupons = async (req,res) => {
+    try {
+        const userData = req.session.user;
+        const coupons = await Coupons.find();
+
+        const redeemedCoupons = userData.redeemedcoupon; 
+        const Notusedcoupon = coupons.filter(coupon => !redeemedCoupons.includes(coupon.code)); 
+
+        return res.render('available-coupons',{coupons:Notusedcoupon})
+    } catch (error) {
+        console.log("Error in loading available coupon page")   
+    }
+}
 
 const applyCoupon = async (req,res) => {
     try {
@@ -34,11 +50,13 @@ const applyCoupon = async (req,res) => {
         }
 
         const discountAmount = (discount/100) * totalPrice;
-        const newSubtotal = totalPrice - discountAmount;
-        console.log(`new sub total is ${newSubtotal}`)
+        const newSubtotal = totalPrice - discountAmount; 
+
+
 
         return res.json({
-            newSubtotal:newSubtotal.toFixed(2)
+            newSubtotal:newSubtotal.toFixed(2),
+            discountAmount
         });
 
     } catch (error) {
@@ -51,6 +69,7 @@ const removeCoupon = async (req,res) => {
     try {
         const {originalPrice}= req.body;
         const subtotal = parseFloat(originalPrice);
+        console.log(`s total is ${subtotal}`)
 
         return res.status(200).json({
             success:true,
@@ -68,5 +87,6 @@ const removeCoupon = async (req,res) => {
 
 module.exports = {
     applyCoupon,
-    removeCoupon
+    removeCoupon,
+    getAvailableCoupons
 }

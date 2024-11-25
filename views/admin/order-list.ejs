@@ -5,7 +5,6 @@
     <div class="content-header">
         <div>
             <h2 class="content-title card-title">Order List</h2>
-            <p>Lorem ipsum dolor sit amet.</p>
         </div>
         <div>
             <input type="text" placeholder="Search order ID" class="form-control bg-white">
@@ -19,10 +18,10 @@
                 </div>
                 <div class="col-lg-2 col-6 col-md-3">
                     <select class="form-select">
-                        <option>Status</option>
-                        <option>Active</option>
-                        <option>Disabled</option>
                         <option>Show all</option>
+                        <option>pending</option>
+                        <option>Shipped</option>
+                        <option>Delivered</option>
                     </select>
                 </div>
                 <div class="col-lg-2 col-6 col-md-3">
@@ -57,7 +56,7 @@
                                     <% }) %>
                                 </td>
                                 <td><%= order.createdOn.toDateString() %></td>
-                                <td><%= order.user ? order.user.username : 'Unknown User' %></td> <!-- Check if order.user exists -->
+                                <td><%= order.user ? order.user.username : 'Unknown User' %></td>
                                 <td><%= order.totalPrice %></td> 
                                 <td>
                                     <select name="status" data-current-status="<%= order.status %>" onchange="updateStatus('<%= order._id %>', this)">
@@ -74,23 +73,33 @@
                         <% }) %>
                     </tbody>                    
                 </table>
-            </div> <!-- table-responsive //end -->
-        </div> <!-- card-body end// -->
-    </div> <!-- card end// -->
+            </div>
+        </div>
+    </div>
+    <!-- Pagination Section -->
     <div class="pagination-area mt-15 mb-50">
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-start">
-                <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                <li class="page-item"><a class="page-link" href="#">02</a></li>
-                <li class="page-item"><a class="page-link" href="#">03</a></li>
-                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                <li class="page-item"><a class="page-link" href="#">16</a></li>
-                <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
+                <% if (currentPage > 1) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>">Previous</a>
+                    </li>
+                <% } %>
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+                    </li>
+                <% } %>
+                <% if (currentPage < totalPages) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage + 1 %>&limit=<%= limit %>">Next</a>
+                    </li>
+                <% } %>
             </ul>
         </nav>
     </div>
-</section> <!-- content-main end// -->
-<%- include("../../views/partials/admin/footer") %> 
+</section>
+<%- include("../../views/partials/admin/footer") %>
 
 <script>
    async function updateStatus(orderId, selectElement) {

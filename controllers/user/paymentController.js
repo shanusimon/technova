@@ -7,12 +7,61 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZOR_PAY_KEY_SECRET
 });
 
+const retryPayment = async (req, res) => {
+    try {
+        const { id: orderId } = req.query;
+
+        if (!orderId) {
+            return res.status(400).json({ message: "Order ID is required" });
+        }
+
+        const order = await Order.findById(orderId).populate('orderedItems.product').populate('address');
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        const options = {
+            amount: Math.round(order.finalAmount * 100), 
+            currency: 'INR',
+            receipt: `retry_order_rcptid_${Date.now()}`
+        };
+
+        const razorpayOrder = await razorpay.orders.create(options);
+
+        return res.status(200).json({
+            razorpay: {
+                amount: razorpayOrder.amount,
+                currency: razorpayOrder.currency,
+                razorpayOrderId: razorpayOrder.id
+            },
+            orderDetails: {
+                orderId: order._id,
+                user: order.user,
+                orderedItems: order.orderedItems,
+                totalPrice: order.totalPrice,
+                discount: order.discount,
+                finalAmount: order.finalAmount,
+                address: order.address,
+                status: order.status,
+                paymentStatus: order.paymentStatus,
+                paymentMethod: order.paymentMethod,
+                createdOn: order.createdOn
+            }
+        });
+    } catch (error) {
+        console.error("Error during retry payment:", error);
+        return res.status(500).json({ message: "Failed to initiate retry payment", error: error.message });
+    }
+};
+
+
 const createRazorpay = async (req, res) => {
     const { amount, currency } = req.body;
 
     try {
         const options = {
-            amount: Math.round(amount * 100), // Amount in paise
+            amount: Math.round(amount * 100), 
             currency: currency || 'INR',
             receipt: `order_rcptid_${Date.now()}`
         };
@@ -75,5 +124,6 @@ const updateOrder = async (req, res) => {
 
 module.exports = {
     createRazorpay,
-    updateOrder
+    updateOrder,
+    retryPayment
 };

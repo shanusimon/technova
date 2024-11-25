@@ -1,356 +1,478 @@
-<%- include("../../views/partials/admin/header") %>
-<section class="content-main">
-    <div class="content-header">
-        <div>
-            <h2 class="content-title card-title">Sales Report</h2>
-            <p>Comprehensive view of all sales transactions</p>
-        </div>
-    </div>
+<%- include('../partials/admin/header') %>
 
-    <!-- Statistics Cards -->
-    <div class="card mb-4">
-        <header class="card-header">
-            <div class="row gx-3">
-                <div class="col-lg-2 col-6 col-md-3">
-                    <select class="form-select" id="dateFilter">
-                        <option value="all">All Time</option>
-                        <option value="today">Today</option>
-                        <option value="week">This Week</option>
-                        <option value="month">This Month</option>
-                        <option value="year">This Year</option>
-                    </select>
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="text-primary">Sales Report</h2>
+            <div class="export-buttons">
+                <button class="btn btn-primary me-2" onclick="previewPDF()">
+                    <i class="material-icons md-file_download"></i> Preview PDF
+                </button>
+
+                <button class="btn btn-primary me-2" onclick="exportToPDF()">
+                    <i class="material-icons md-file_download"></i> Export PDF
+                </button>
+                <button class="btn btn-success" onclick="exportToExcel()">
+                    <i class="material-icons md-file_download"></i> Export Excel
+                </button>
+            </div>
+        </div>
+
+        <div id="pdfPreviewModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">PDF Preview</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <canvas id="pdfCanvas"></canvas> <!-- Canvas for PDF rendering -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="downloadPDF()">Download PDF</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
                 </div>
-                <br>
-                <br>
-                <br>
-                <div class="mb-4 d-flex gap-3">
-                    <form class="d-flex align-items-center">
-                        <label for="startDate" class="me-2">Start Date:</label>
-                        <input type="date" id="startDate" name="startDate" class="form-control me-3">
-                        <label for="endDate" class="me-2">End Date:</label>
-                        <input type="date" id="endDate" name="endDate" class="form-control me-3">
-                    </form>
+            </div>
+        </div>
+
+        <!-- Date Filter Options -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <select class="form-select w-auto" name="dateRange" id="dateRangeSelect" aria-label="Select Date Range">
+                <option value="">Select Date Range</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+            </select>
+
+            <form class="d-flex align-items-center gap-2">
+                <label for="startDate" class="form-label me-2">Start Date:</label>
+                <input type="date" id="startDate" name="startDate" class="form-control w-auto">
+                <label for="endDate" class="form-label me-2">End Date:</label>
+                <input type="date" id="endDate" name="endDate" class="form-control w-auto">
+            </form>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Sales</h6>
+                        <h3 class="text-primary"></h3>
+                    </div>
                 </div>
             </div>
-        </header>
-    <div class="row mb-4">
-        <div class="col-lg-4">
-            <div class="card card-body mb-4">
-                <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-primary-light">
-                        <i class="text-primary material-icons md-monetization_on"></i>
-                    </span>
-                    <div class="text">
-                        <h6 class="mb-1">Total Sales</h6>
-                        <span>&#8377;<%=sumOfSales.sum %></span>
+            <div class="col-lg-3 col-md-6">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Orders</h6>
+                        <h3 class="text-success">
+                            <%= count %>
+                        </h3>
                     </div>
-                </article>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Discount</h6>
+                        <h3 class="text-warning"></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Customers</h6>
+                        <h3 class="text-info"></h3>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="card card-body mb-4">
-                <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-success-light">
-                        <i class="text-success material-icons md-shopping_bag"></i>
-                    </span>
-                    <div class="text">
-                        <h6 class="mb-1">Total Orders</h6>
-                        <span><%=counts.count  %></span>
-                    </div>
-                </article>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="card card-body mb-4">
-                <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-warning-light">
-                        <i class="text-warning material-icons md-person"></i>
-                    </span>
-                    <div class="text">
-                        <h6 class="mb-1">Total Customers</h6>
-                        <span><%=numberOfCustomers.totalCustomers  %></span>
-                    </div>
-                </article>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="card card-body mb-4">
-                <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-warning-light">
-                        <i class="text-warning material-icons md-person"></i>
-                    </span>
-                    <div class="text">
-                        <h6 class="mb-1">Over All Discounts</h6>
-                        <span><%=overallDiscount.sum %></span>
-                    </div>
-                </article>
-            </div>
-        </div>
-    </div>
-    <div class="mb-4">
-        <button onclick="exportToPDF()" class="btn btn-primary">Download PDF</button>
-        <button onclick="exportToExcel()" class="btn btn-success">Download Excel</button>
-    </div>
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover" id="salesTable">
-                    <thead>
-                        <tr>
-                            <th>Order No</th>
-                            <th>Customer Name</th>
-                            <th>Customer Email</th>
-                            <th>Product Name</th>
-                            <th>Quantity</th>
-                            <th>Product Price</th>
-                            <th>Coupon Code</th>
-                            <th>Coupon Amount</th>
-                            <th>Total Price</th>
-                            <th>Order Status</th>
-                            <th>Order Date</th>
-                            <th>Payment Method</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% let k = 1 %>
-                        <% salesData.forEach(data => { %>
+
+        <!-- Sales Report Table -->
+        <div class="table-responsive shadow-sm">
+            <table class="table table-hover align-middle text-center" id="salesTable">
+                <thead class="table-primary text-uppercase">
+                    <tr>
+                        <th>Sl No</th>
+                        <th>User Name</th>
+                        <th>Email</th>
+                        <th>Products</th>
+                        <th>Quantity</th>
+                        <th>Date</th>
+                        <th>Total Price</th>
+                        <th>Coupon Code</th>
+                        <th>Coupon Amount</th>
+                        <th>Final Amount</th>
+                        <th>Payment Method</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% let k=1; %>
+                        <% for (let i=orders.length - 1; i>= 0; i--) { %>
                             <tr>
-                                <td><%= k++ %></td>
-                                <td><%= data.user ? data.user.username : "N/A" %></td>
-                                <td><%= data.user ? data.user.email : "N/A" %></td>
+                                <td>
+                                    <%= k++ %>
+                                </td>
+                                <td data-customer-id="<%= orders[i].user%>">
+                                    <%= orders[i].user.name %>
+                                </td>
+
+                                <td>
+                                    <%= orders[i].user.email %>
+                                </td>
                                 <td>
                                     <ul>
-                                        <% data.orderedItems.forEach(item => { %>
-                                            <li><%= item.product.productName %></li>
-                                        <% }) %>
+                                        <% orders[i].orderedItems.forEach(item=> { %>
+                                            <li>
+                                                <%= item.product.productName %>
+                                            </li>
+                                            <% }) %>
                                     </ul>
                                 </td>
-                                <td><%= data.orderedItems.reduce((total, item) => total + item.quantity, 0) %></td>
-                                <td><%= data.totalPrice %></td>
-                                <td><%= data.couponCode ? data.couponCode : "N/A" %></td>
-                                <td><%= data.discount %></td>
-                                <td><%= data.finalAmount %></td>
-                                <td><span class="badge bg-success"><%= data.status %></span></td>
-                                <td><%= data.createdOn.toLocaleDateString() %></td>
-                                <td><%= data.paymentMethod %></td>
+                                <td>
+                                    <ul>
+                                        <% orders[i].orderedItems.forEach(item=> { %>
+                                            <li>
+                                                <%= item.quantity %>
+                                            </li>
+                                            <% }) %>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <%= orders[i].createdOn.toLocaleDateString() %>
+                                </td>
+                                <td>₹<%= orders[i].totalPrice.toLocaleString() %>
+                                </td>
+                                <td>
+                                    <%= orders[i].couponCode %>
+                                </td>
+                                <td>₹<%= orders[i].discount.toLocaleString() %>
+                                </td>
+                                <td>₹<%= orders[i].finalAmount.toLocaleString() %>
+                                </td>
+                                <td>
+                                    <%= orders[i].paymentMethod %>
+                                </td>
+                                <td>
+                                    <%= orders[i].status %>
+                                </td>
                             </tr>
-                        <% }); %>
-                    </tbody>                                    
-                </table>
-            </div>
+                            <% } %>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-area my-4">
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <% for(let i=1;i<=totalPages;i++){ %>
+                        <li class="page-item <%= (i===page) ? 'active' : '' %>">
+                            <a class="page-link" style="z-index: 100;" href="?page=<%= i %>">
+                                <%= i %>
+                            </a>
+
+
+                        </li>
+                        <% } %>
+                </ul>
+            </nav>
         </div>
     </div>
-    <div class="pagination-area mt-15 mb-50">
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-start">
-                <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                <li class="page-item"><a class="page-link" href="#">02</a></li>
-                <li class="page-item"><a class="page-link" href="#">03</a></li>
-                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                <li class="page-item"><a class="page-link" href="#">16</a></li>
-                <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
-            </ul>
-        </nav>
-    </div>
-</section>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
-
-
     <script>
-        function exportToPDF() {
+        async function previewPDF() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const doc = new jsPDF('p', 'pt', 'a4');
 
-            const table = document.getElementById('salesTable');
-
-            doc.setFontSize(18);
-            doc.text('Sales Report', 14, 20);
-
-            doc.setFontSize(12);
-            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+            const logoURL = '/zoul-frontend/assets/imgs/theme/logo.png';
+            doc.addImage(logoURL, 'PNG', 15, 10, 40, 40);
+            doc.setFontSize(16);
+            doc.text('Sales Report', 70, 30);
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 70, 45);
 
             doc.autoTable({
-                html: table,
-                startY: 40
+                html: '#salesTable',
+                startY: 60,
+                theme: 'grid',
+                headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255], fontSize: 8 },
+                bodyStyles: { fontSize: 8, cellPadding: 3, minCellWidth: 45 },
+                styles: { overflow: 'linebreak', valign: 'middle', halign: 'center' },
+                columnStyles: {
+                    0: { cellWidth: 30, halign: 'center' },
+                    1: { cellWidth: 50, halign: 'left' },
+                    2: { cellWidth: 40, halign: 'left' },
+                    3: { cellWidth: 40, halign: 'center' },
+                    4: { cellWidth: 40, halign: 'center' },
+                    5: { cellWidth: 40, halign: 'right' },
+                    6: { cellWidth: 40, halign: 'center' },
+                    7: { cellWidth: 40, halign: 'center' },
+                    8: { cellWidth: 40, halign: 'center' },
+                    9: { cellWidth: 40, halign: 'center' },
+                    10: { cellWidth: 40, halign: 'center' },
+                    11: { cellWidth: 40, halign: 'center' }
+                },
+                didParseCell: function (data) {
+                    if (!data.cell.text || data.cell.text.length === 0) {
+                        data.cell.text = '-';
+                        return;
+                    }
+                 
+                },
+
+                willDrawCell: function (data) {
+                    if (data.cell.text.length > 20) {
+                        data.cell.styles.fontSize = 4;
+                    }
+                }
             });
 
+            const pdfBlob = doc.output('blob');
+            showPDFPreview(pdfBlob);
+        }
+        async function showPDFPreview(pdfBlob) {
+            try {
+                const pdfCanvas = document.getElementById('pdfCanvas');
+                const pdfCtx = pdfCanvas.getContext('2d');
+
+                const pdfData = await pdfBlob.arrayBuffer();
+                const pdfDocument = await pdfjsLib.getDocument({ data: pdfData }).promise;
+                const page = await pdfDocument.getPage(1);
+
+                const viewport = page.getViewport({ scale: 1.3 });
+                pdfCanvas.width = viewport.width;
+                pdfCanvas.height = viewport.height;
+
+                await page.render({
+                    canvasContext: pdfCtx,
+                    viewport: viewport,
+                }).promise;
+
+                $('#pdfPreviewModal').modal('show');
+            } catch (error) {
+                console.error('Error showing PDF preview:', error);
+                alert('Failed to load PDF preview. Please try again.');
+            }
+        }
+
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4');
             doc.save('sales-report.pdf');
         }
 
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4');
+            const logoURL = '/evara-frontend/assets/imgs/theme/logo.png';
+            doc.addImage(logoURL, 'PNG', 15, 10, 40, 40);
+            doc.setFontSize(16);
+            doc.text('Sales Report', 70, 30);
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 70, 45);
+
+            const rupeeSymbol = '₹';
+            doc.setFont('CustomFont', 'normal');
+
+            doc.autoTable({
+                html: '#salesTable',
+                startY: 60,
+                theme: 'grid',
+                headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255], fontSize: 8 },
+                bodyStyles: { fontSize: 6, cellPadding: 3, minCellWidth: 50 },
+                styles: { overflow: 'linebreak', valign: 'middle', halign: 'center' },
+                columnStyles: {
+                    0: { cellWidth: 30, halign: 'center' },
+                    1: { cellWidth: 50, halign: 'left' },
+                    2: { cellWidth: 40, halign: 'left' },
+                    3: { cellWidth: 40, halign: 'center' },
+                    4: { cellWidth: 40, halign: 'center' },
+                    5: { cellWidth: 40, halign: 'right' },
+                    6: { cellWidth: 40, halign: 'center' },
+                    7: { cellWidth: 40, halign: 'center' },
+                    8: { cellWidth: 40, halign: 'center' },
+                    9: { cellWidth: 40, halign: 'center' },
+                    10: { cellWidth: 40, halign: 'center' },
+                    11: { cellWidth: 40, halign: 'center' }
+                },
+                didParseCell: function (data) {
+                    if (data.cell.text === undefined || data.cell.text === null) {
+                        data.cell.text = '';
+                    }
+
+                },
+                willDrawCell: function (data) {
+                    if (data.cell.text.length > 20) {
+                        data.cell.styles.fontSize = 5;
+                    }
+                }
+            });
+
+            // Save the PDF
+            doc.save('sales-report.pdf');
+        }
 
         function exportToExcel() {
             const table = document.getElementById('salesTable');
             const wb = XLSX.utils.table_to_book(table, { sheet: "Sales Report" });
-
             XLSX.writeFile(wb, 'sales-report.xlsx');
         }
-document.getElementById('dateFilter').addEventListener('change', function() {
-    const selectedFilter = this.value;
-    const table = document.getElementById('salesTable');
-    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
 
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay());
-    
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    
-    const yearStart = new Date(today.getFullYear(), 0, 1);
+        function initializeDateFilter() {
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const table = document.getElementById('salesTable');
+            const tbody = table.getElementsByTagName('tbody')[0];
+            const rows = tbody.getElementsByTagName('tr');
+            const dateRangeSelect = document.getElementById('dateRangeSelect');
 
-    let visibleRecords = 0;
+            function parseDate(dateStr) {
+                const [day, month, year] = dateStr.split('/').map(Number);
+                return new Date(year, month - 1, day);
+            }
 
-    for (let row of rows) {
-        const dateCell = row.querySelector('td:nth-child(11)'); 
-        if (!dateCell) continue;
+            function formatCurrency(amount) {
+                return amount.toLocaleString('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).replace('₹', 'INR');
+            }
+
+            function filterTable() {
+                const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+                const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+
+                if (startDate) startDate.setHours(0, 0, 0, 0);
+                if (endDate) endDate.setHours(23, 59, 59, 999);
+
+                let visibleRows = 0;
+                let totalSales = 0;
+                let totalDiscount = 0;
+                const uniqueCustomers = new Set();
+
+                // Loop through each row to filter by date and sum values
+                for (const row of rows) {
+                    const dateCell = row.cells[5].textContent.trim();
+                    const rowDate = parseDate(dateCell);
+
+                    // Skip if no date or outside of range
+                    if (!rowDate) continue;
+
+                    let showRow = true;
+                    if (startDate && rowDate < startDate) showRow = false;
+                    if (endDate && rowDate > endDate) showRow = false;
+
+                    // Show or hide row based on date filter
+                    row.style.display = showRow ? '' : 'none';
+
+                    // Aggregate only if the row is within the date range
+                    if (showRow) {
+                        visibleRows++;
+
+                        // Parse and accumulate final amount and discount values
+                        const finalAmount = parseFloat(row.cells[9].textContent.replace(/[₹,]/g, '')) || 0;
+                        const discount = parseFloat(row.cells[8].textContent.replace(/[₹,]/g, '')) || 0;
+
+                        totalSales += finalAmount;
+                        totalDiscount += discount;
+
+                        // Use a unique customer identifier for counting
+                        const customerId = row.cells[1].getAttribute('data-customer-id');
+                        if (customerId) uniqueCustomers.add(customerId);
+                    }
+                }
+
+                // Format the total sales and discount as currency
+                const formatCurrency = (amount) => {
+                    return amount.toLocaleString('en-IN', {
+                        style: 'currency',
+                        currency: 'INR',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).replace('INR', '₹');
+                };
+
+                const summaryCards = document.querySelectorAll('.card .card-body');
+                summaryCards.forEach(card => {
+                    const title = card.querySelector('h6').textContent.trim();
+                    const valueSpan = card.querySelector('h3');
+
+                    switch (title) {
+                        case 'Total Sales':
+                            valueSpan.textContent = formatCurrency(totalSales);
+                            break;
+                        case 'Total Orders':
+                            valueSpan.textContent = visibleRows;
+                            break;
+                        case 'Total Discount':
+                            valueSpan.textContent = formatCurrency(totalDiscount);
+                            break;
+                        case 'Total Customers':
+                            valueSpan.textContent = uniqueCustomers.size;
+                            break;
+                    }
+                });
+            }
 
 
-        const dateParts = dateCell.textContent.trim().split('/');
-        if (dateParts.length !== 3) continue;
+            function handleDateRangeSelection(e) {
+                e.preventDefault();
+
+                const today = new Date();
 
 
-        const orderDate = new Date(
-            parseInt(dateParts[2]), 
-            parseInt(dateParts[1]) - 1,
-            parseInt(dateParts[0])
-        );
-        orderDate.setHours(0, 0, 0, 0);
+                const startDate = new Date(today);
 
-        let show = true;
-        const orderTime = orderDate.getTime();
-        const todayTime = today.getTime();
+                switch (this.value) {
+                    case 'today':
+                        startDateInput.value = today.toISOString().split('T')[0];
+                        endDateInput.value = today.toISOString().split('T')[0];
+                        break;
+                    case 'week':
+                        startDate.setDate(today.getDate() - 7);
+                        startDateInput.value = startDate.toISOString().split('T')[0];
+                        endDateInput.value = today.toISOString().split('T')[0];
+                        break;
+                    case 'month':
+                        startDate.setMonth(today.getMonth() - 1);
+                        startDateInput.value = startDate.toISOString().split('T')[0];
+                        endDateInput.value = today.toISOString().split('T')[0];
+                        break;
+                    case 'year':
+                        startDate.setFullYear(today.getFullYear() - 1);
+                        startDateInput.value = startDate.toISOString().split('T')[0];
+                        endDateInput.value = today.toISOString().split('T')[0];
+                        break;
+                    default:
+                        startDateInput.value = '';
+                        endDateInput.value = '';
+                        break;
+                }
+                filterTable();
+            }
 
-        switch (selectedFilter) {
-            case 'today':
+            dateRangeSelect.addEventListener('change', handleDateRangeSelection);
+            startDateInput.addEventListener('change', filterTable);
+            endDateInput.addEventListener('change', filterTable);
 
-                show = orderDate.getDate() === today.getDate() &&
-                       orderDate.getMonth() === today.getMonth() &&
-                       orderDate.getFullYear() === today.getFullYear();
-                break;
-            case 'week':
-                show = orderTime >= weekStart.getTime() && orderTime <= todayTime;
-                break;
-            case 'month':
-                show = orderDate.getMonth() === today.getMonth() &&
-                       orderDate.getFullYear() === today.getFullYear();
-                break;
-            case 'year':
-                show = orderDate.getFullYear() === today.getFullYear();
-                break;
-            default:
-                show = true;
+            filterTable();
         }
-        
-        row.style.display = show ? '' : 'none';
-        if (show) visibleRecords++;
-    }
 
-    const totalRecords = document.createElement('div');
-    totalRecords.className = 'mt-2 ms-2';
-    totalRecords.textContent = `Showing ${visibleRecords} records`;
-    
-    const existingCounter = document.querySelector('.filtered-counter');
-    if (existingCounter) existingCounter.remove();
-    
-    totalRecords.className = 'filtered-counter ' + totalRecords.className;
-    table.parentElement.insertBefore(totalRecords, table);
-
-    console.log('Current filter:', selectedFilter);
-    console.log('Today:', today.toLocaleDateString());
-    console.log('Week start:', weekStart.toLocaleDateString());
-    console.log('Month start:', monthStart.toLocaleDateString());
-    console.log('Year start:', yearStart.toLocaleDateString());
-});
+        document.addEventListener('DOMContentLoaded', initializeDateFilter);
+    </script>
 
 
-
-
-const debugButton = document.createElement('button');
-debugButton.textContent = 'Test Date Parse';
-debugButton.className = 'btn btn-secondary ms-2';
-debugButton.onclick = function() {
-    const table = document.getElementById('salesTable');
-    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-    const dateCell = rows[0].querySelector('td:nth-child(11)');
-    if (dateCell) {
-        const dateParts = dateCell.textContent.trim().split('/');
-        const orderDate = new Date(
-            parseInt(dateParts[2]), 
-            parseInt(dateParts[1]) - 1, 
-            parseInt(dateParts[0]) 
-        );
-        console.log('Sample date text:', dateCell.textContent);
-        console.log('Parsed date:', orderDate.toLocaleDateString());
-        alert(`Original: ${dateCell.textContent}\nParsed: ${orderDate.toLocaleDateString()}`);
-    }
-};
-
-document.querySelector('.mb-4').appendChild(debugButton);
-
-document.getElementById('dateFilter').dispatchEvent(new Event('change'));
-</script>
-<%- include("../../views/partials/admin/footer") %>
-<style>
-.badge {
-    padding: 6px 12px;
-    font-size: 0.875rem;
-}
-.table th {
-    font-weight: 600;
-    background-color: #f8f9fa;
-}
-.table td {
-    vertical-align: middle;
-}
-.content-header {
-    margin-bottom: 30px;
-}
-.card-header {
-    padding: 1rem;
-    background-color: #fff;
-    border-bottom: 1px solid rgba(0,0,0,.125);
-}
-.table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-.icontext {
-    display: inline-flex;
-    align-items: center;
-    padding: 5px;
-}
-.icontext .icon {
-    position: relative;
-    margin-right: 15px;
-    margin-left: 10px;
-    width: 48px;
-    height: 48px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-.bg-primary-light {
-    background-color: rgba(13, 110, 253, 0.15);
-}
-.bg-success-light {
-    background-color: rgba(40, 167, 69, 0.15);
-}
-.bg-warning-light {
-    background-color: rgba(255, 193, 7, 0.15);
-}
-.text-success {
-    color: #28a745;
-}
-.text-primary {
-    color: #0d6efd;
-}
-.text-warning {
-    color: #ffc107;
-}
-.text-sm {
-    font-size: 0.875rem;
-}
-</style>
+    <%- include('../partials/admin/footer') %>

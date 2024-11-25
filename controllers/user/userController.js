@@ -9,6 +9,8 @@ const bcrypt = require("bcrypt");
 const { get } = require("../../routes/userRouter");
 const Order = require("../../models/orderSchema");
 const Wallet = require("../../models/walletSchema");
+const Return = require("../../models/returnSchema");
+const Notification = require("../../models/notificationSchema");
 
 
 const loadHomepage = async (req,res) => {
@@ -24,24 +26,74 @@ const loadHomepage = async (req,res) => {
             category:{$in:categories.map(category=>category._id)}
         });
         productData.sort((a,b)=>new Date(b.createdOn)-new Date(a.createdOn));
+        let notifications = [];
 
-        if(user){
-            const userData = await User.findOne({_id:user._id});
-            res.render("home",{
-                user:userData,
-                products:productData,
-                banner:banner || []
-            })
-        }else{
-            return res.render("home",{
-                products:productData,
-                banner:banner || [],
+        if (user) {
+            const userData = await User.findOne({ _id: user._id });
+        
+            notifications = await Notification.find({ 
+                userId: user._id, 
+                status: "unread" 
+            }); 
+            
+        
+            res.render("home", {
+                user: userData,
+                products: productData,
+                banner: banner || [],
+                notifications: notifications || []
+            });
+        } else {
+            res.render("home", {
+                products: productData,
+                banner: banner || [],
+                notifications: notifications
             });
         }
+        
     } catch (error) {
         console.log("Home Page Not found",error.message);
         res.status(500).send("server error");
     }
+};
+const loadShop = async (req,res) => {
+    try {
+       
+        const user = req.session.user;
+       
+        const categories = await Category.find({isListed:true});
+        let productData = await Product.find({isBlocked:false,
+            category:{$in:categories.map(category=>category._id)}
+        });
+        productData.sort((a,b)=>new Date(b.createdOn)-new Date(a.createdOn));
+        let notifications = [];
+
+        if (user) {
+            const userData = await User.findOne({ _id: user._id });
+        
+            notifications = await Notification.find({ 
+                userId: user._id, 
+                status: "unread" 
+            }); 
+            
+        
+            res.render("shop", {
+                user: userData,
+                products: productData,
+                notifications: notifications || []
+            });
+        } else {
+            res.render("shop", {
+                products: productData,
+                notifications: notifications
+            });
+        }
+        
+    } catch (error) {
+        console.log("Home Page Not found",error.message);
+        res.status(500).send("server error");
+    }
+    
 }
 
 
@@ -91,47 +143,37 @@ const cancelOrder = async (req,res) => {
 
 const returnOrder = async (req, res) => {
     try {
-        const orderId = req.query.id;
+        const { orderId, reason } = req.body;
         const userId = req.session.user._id;
 
-        const order = await Order.findById(orderId);
-        if (!order) {
-            return res.status(404).json({ message: "Order not found" });
+
+        const orderData = await Order.findById(orderId);
+        if (!orderData) {
+            return res.status(404).json({ message: 'Order not found' });
         }
 
-        const amount = order.finalAmount;
-
-        const walletData = {
-            $inc: { balance: amount },
-            $push: {
-                transactions: {
-                    type: 'Refund',
-                    amount,
-                    orderId,
-                    description: "Refund for your returned product"
-                }
-            }
-        };
-
-        const walletUpdate = await Wallet.findOneAndUpdate(
-            { userId: userId },
-            walletData,
-            { upsert: true, new: true }
-        );
-
-        if(!walletUpdate){
-            throw new Error("Failed to update Wallet");
-        }else{
-            await Order.findByIdAndUpdate(orderId,{status:"Cancelled"});
+        const Existingreturn = await Return.findOne({orderId});
+        if(Existingreturn){
+            return res.status(404).json({message: 'Return request already submited for this order'})
         }
 
-        res.status(200).json({success:true, message: "Order returned successfully, amount refunded to wallet" });
+        const reasonData = new Return({
+            userId,
+            orderId,
+            reason,
+            refundAmount: orderData.finalAmount,
+        });
+
+        await reasonData.save();
+
+        return res.status(200).json({ message: "Return Request Submitted Successfully" });
 
     } catch (error) {
-        console.error("Error in returnOrder:", error);
-        res.status(500).json({success:false, message: "An error occurred while processing the return" });
+        console.error("Error processing return request:", error);
+        return res.status(500).json({ message: 'Something went wrong, please try again later.' });
     }
 };
+
 
 
 const sortProduct = async (req,res) => {
@@ -457,7 +499,8 @@ const getuserprofile = async (req,res) => {
             const addressDoc = await Address.findOne({userId});
             const orders = await Order.find({ user: userId })
             .populate('orderedItems.product')
-            .sort({ creaetedOn: -1 });
+            .sort({ creaetedOn: -1 })
+          
    
             if (!user) {
                 return res.redirect('/');
@@ -678,8 +721,21 @@ const saveAddress = async (req, res) => {
     }
 };
 
+const updateNotification = async (req,res) => {
+    try {
+        const notificationId = req.query.id;
+        console.log(notificationId)
+        await Notification.findByIdAndUpdate(notificationId,{status:"read"})
+        res.status(200).send({ success: true });
+    } catch (error) {
+        console.error('Error updating notification status:', error);
+        res.status(500).send({ success: false, error: error.message });
+    }
+}
+
 
 module.exports ={
+    updateNotification,
     loadHomepage,
     pageNotfound,
     loadSignup,
@@ -700,6 +756,7 @@ module.exports ={
     cancelOrder,
     getEditAddress,
     saveEditAddress,
-    returnOrder
+    returnOrder,
+    loadShop
 }
     

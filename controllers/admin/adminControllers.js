@@ -41,19 +41,27 @@ const login =  async(req,res)=>{
 
 const loadDashboard = async (req, res) => {
     try {
-
         if (req.session.admin) {
             const salesData = await getTotalSales();
             const products = await getMostSellingProducts();
             const categories = await getMostSellingCategories();
             const brands = await getMostSellingBrands();
+            const totalOrders = await Order.countDocuments();
+            const totalProducts = await Product.countDocuments()
 
-            console.log(salesData)
-            res.render('dashboard', { salesData, products, categories, brands });
+
+            res.render('dashboard', { 
+                salesData: JSON.parse(JSON.stringify(salesData)), 
+                products: JSON.parse(JSON.stringify(products)), 
+                categories: JSON.parse(JSON.stringify(categories)), 
+                brands: JSON.parse(JSON.stringify(brands)),
+                totalOrders,
+                totalProducts
+            });
         }
-
     } catch (error) {
-        res.redirect('/pageerror')
+        console.error("Dashboard Error:", error);
+        res.redirect('/pageerror');
     }
 }
 
@@ -68,82 +76,66 @@ async function getTotalSales() {
             }
         ]);
 
+        const currentYear = new Date().getFullYear();
+        const startOfYear = new Date(currentYear, 0, 1);
+
         const weeklySales = await Order.aggregate([
             {
                 $match: {
-                    createdAt: {
-                        $gte: new Date(new Date().getFullYear(), 0, 1) 
-                    }
+                    createdOn: { $gte: startOfYear } 
                 }
             },
             {
                 $group: {
-                    _id: { $isoWeek: "$createdAt" },
+                    _id: { $week: "$createdOn" },
                     sales: { $sum: "$finalAmount" }
                 }
             },
-            {
-                $sort: { "_id": 1 }
-            }
+            { $sort: { "_id": 1 } }
         ]);
 
- 
         const monthlySales = await Order.aggregate([
             {
                 $match: {
-                    createdAt: {
-                        $gte: new Date(new Date().getFullYear(), 0, 1) 
-                    }
+                    createdOn: { $gte: startOfYear } 
                 }
             },
             {
                 $group: {
-                    _id: { $month: "$createdAt" },
+                    _id: { $month: "$createdOn" },
                     sales: { $sum: "$finalAmount" }
                 }
             },
-            {
-                $sort: { "_id": 1 }
-            }
+            { $sort: { "_id": 1 } }
         ]);
-
 
         const yearlySales = await Order.aggregate([
             {
                 $group: {
-                    _id: { $year: "$createdAt" },
+                    _id: { $year: "$createdOn" },
                     sales: { $sum: "$finalAmount" }
                 }
             },
-            {
-                $sort: { "_id": 1 }
-            },
-            {
-                $limit: 5 
-            }
+            { $sort: { "_id": 1 } }
         ]);
 
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
-  
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+
         const weeklyData = {
             labels: weeklySales.map(item => `Week ${item._id}`),
             data: weeklySales.map(item => item.sales)
         };
 
-
         const monthlyData = {
-            labels: [],
-            data: []
+            labels: monthNames,
+            data: Array(12).fill(0)
         };
-
-
-        for (let i = 1; i <= 12; i++) {
-            const monthData = monthlySales.find(item => item._id === i);
-            monthlyData.labels.push(monthNames[i-1]);
-            monthlyData.data.push(monthData ? monthData.sales : 0);
-        }
-
+        monthlySales.forEach(item => {
+            if (item._id >= 1 && item._id <= 12) {
+                monthlyData.data[item._id - 1] = item.sales;
+            }
+        });
 
         const yearlyData = {
             labels: yearlySales.map(item => item._id.toString()),
@@ -157,7 +149,7 @@ async function getTotalSales() {
             yearly: yearlyData
         };
     } catch (error) {
-        console.error("Error calculating sales data:", error);
+        console.error("Error in getTotalSales:", error);
         return {
             totalSalesAmount: 0,
             weekly: { labels: [], data: [] },
@@ -166,6 +158,7 @@ async function getTotalSales() {
         };
     }
 }
+
 
 async function getMostSellingProducts() {
     try {

@@ -38,8 +38,11 @@
                 <div class="col-12">
                     <div class="order-summary">
                         <h3>Order #<%= order.orderId || 'N/A' %></h3>
-                        <p><strong>Order Date:</strong> <%= order.creaetedOn ? new Date(order.creaetedOn).toLocaleDateString() : 'N/A' %></p>
+                        <br>
+                        <p><strong>Order Date:</strong> <%= (order.createdOn).toLocaleDateString() %></p>
+                        <br>
                         <p><strong>Status:</strong> <%= order.status || 'N/A' %></p>
+                        <br>
                         <hr>
 
                         <!-- Item List -->

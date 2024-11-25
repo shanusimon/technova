@@ -51,10 +51,14 @@ router.use(async (req, res, next) => {
 
 router.get('/pagenotFound',userController.pageNotfound);
 router.get("/",userController.loadHomepage);
+router.get("/shop",userController.loadShop);
 router.get('/signup',userController.loadSignup);
 router.post('/signup',userController.signup)
 router.post('/verify-otp',userController.verifyOtp);
 router.post('/resend-otp',userController.resendOtp);
+router.get("/about",(req,res)=>{
+    return res.render('aboutUs')
+})
 
 router.get("/auth/google",passport.authenticate('google',{scope:['profile','email']}));
 router.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:'/signup'}),(req,res)=>{
@@ -67,7 +71,7 @@ router.post('/userprofile',userController.saveUserData);
 router.get('/order-details',userController.orderProductDetails);
 router.get('/order-cancel',userController.cancelOrder);
 router.get('/sort',userController.sortProduct);
-router.post('/order-return',userController.returnOrder)
+router.post('/return-request',userController.returnOrder)
 
 //profile managment 
 router.get("/forgot-password",profileController.getForgotPassPage);
@@ -110,10 +114,12 @@ router.post("/wishlist-addToCart",wishlistController.saveToCartFromWishlist);
 //coupon
 router.post('/applyCoupon',couponController.applyCoupon);
 router.post('/removeCoupon',couponController.removeCoupon);
+router.get('/available-coupons',couponController.getAvailableCoupons);
 
 //payment 
 router.post('/create-order',paymentController.createRazorpay);
-router.post('/update-order',paymentController.updateOrder)
+router.post('/update-order',paymentController.updateOrder);
+router.get('/retry-payment',paymentController.retryPayment);
 
 //wallet
 router.get('/wallet',walletController.getWalletInfo);
@@ -121,6 +127,9 @@ router.get('/wallet',walletController.getWalletInfo);
 //search
 router.get('/search',searchController.searchControl);
 router.get('/filter-by-category',searchController.filterCategory);
+
+router.patch(`/mark-notification-read`,userController.updateNotification)
+
 
 
 module.exports = router;

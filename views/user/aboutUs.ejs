@@ -1,0 +1,247 @@
+<%- include('../partials/user/header') %>
+
+<main>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>About Technova</h1>
+            <p>Crafting Premium Audio Experiences Since 2010</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="content-section">
+        <div class="about-intro">
+            <h2>Our Story</h2>
+            <p>
+                Welcome to <strong>Technova</strong>, your gateway to unparalleled audio experiences. Since 2010, 
+                we have been revolutionizing the way people listen to music, offering an exclusive range of headphones 
+                designed to bring sound to life. With a focus on innovation, quality, and customer satisfaction, Technova 
+                is proud to serve music lovers, audiophiles, and professionals worldwide.
+            </p>
+        </div>
+    </section>
+
+    <!-- Founders Section -->
+    <section class="founders-section">
+        <h2>Meet Our Founders</h2>
+        <div class="founders-grid">
+            <a href="https://www.instagram.com/.shanu.simon./profilecard/?igsh=MXZjcnQxbmY4OG52bA==">
+                <div class="founder-card">
+                    <img src="/uploads/dev/shanu.jpg" alt="John Doe" class="founder-image" >
+                    <h3>Shanu Simon</h3>
+                    <p>Audio Engineering Pioneer</p>
+                </div>
+            </a>
+            
+            <div class="founder-card">
+                <img src="/uploads/dev/kannama.jpg" alt="Jane Smith" class="founder-image">
+                <h3>Aleena PM</h3>
+                <p>Sound Innovation Expert</p>
+            </div>
+            <div class="founder-card">
+                <img src="/uploads/dev/athul.jpg" alt="Jane Smith" class="founder-image">
+                <h3>Athul</h3>
+                <p>Sound Innovation Expert</p>
+            </div>
+            <div class="founder-card">
+                <img src="/uploads/dev/vishnu.jpg" alt="Jane Smith" class="founder-image">
+                <h3>Vishnu MR</h3>
+                <p>Sound Innovation Expert</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="content-section">
+        <h2>Why Choose Technova</h2>
+        <div class="values-section">
+            <div class="value-card">
+                <img src="https://via.placeholder.com/100" alt="Premium Quality" class="value-icon">
+                <h3>Premium Quality</h3>
+                <p>Curated selection of top-tier audio equipment for exceptional performance.</p>
+            </div>
+            <div class="value-card">
+                <img src="https://via.placeholder.com/100" alt="Expert Support" class="value-icon">
+                <h3>Expert Support</h3>
+                <p>A dedicated team ready to assist with all your audio needs.</p>
+            </div>
+            <div class="value-card">
+                <img src="https://via.placeholder.com/100" alt="Innovation" class="value-icon">
+                <h3>Innovation</h3>
+                <p>Bringing you the latest in audio technology to enhance your experience.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <h2>Get in Touch</h2>
+        <p>Have questions? We're here to help!</p>
+        <div class="contact-grid">
+            <div class="contact-item">
+                <h3>Email Us</h3>
+                <p><a href="mailto:support@technova.com">support@technova.com</a></p>
+            </div>
+            <div class="contact-item">
+                <h3>Call Us</h3>
+                <p>+1-800-TECHNOVA</p>
+            </div>
+            <div class="contact-item">
+                <h3>Visit Us</h3>
+                <p>123 Audio Lane<br>Sound City, USA 56789</p>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        :root {
+            --primary-color: #ffffff;
+            --accent-color: #e67e22;
+            --text-color: #34495e;
+            --light-bg: #f9f9f9;
+            --font-serif: 'Georgia', serif;
+            --font-sans: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        main {
+            font-family: var(--font-sans);
+            color: var(--text-color);
+            line-height: 1.8;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(23, 125, 77, 0.8), rgba(44, 62, 80, 0.8));
+            background-size: cover;
+            background-position: center;
+            color: rgb(0, 0, 0);
+            padding: 6rem 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-family: var(--font-serif);
+            font-size: 3.5rem;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin: 1.5rem 0;
+            opacity: 0.9;
+        }
+
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .content-section h2 {
+            font-family: var(--font-serif);
+            color: rgb(0, 0, 0);
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .about-intro {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .founders-section {
+            background-color: var(--light-bg);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .founders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .founder-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .founder-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .founder-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+            object-fit: cover;
+        }
+
+        .values-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .value-card {
+            text-align: center;
+            padding: 2rem;
+            background: var(--light-bg);
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .value-card img {
+            margin-bottom: 1rem;
+            width: 100px;
+        }
+
+        .value-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .contact-section {
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .contact-item a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .contact-item a:hover {
+            color: white;
+        }
+    </style>
+</main>
+
+<%- include('../partials/user/footer') %>
