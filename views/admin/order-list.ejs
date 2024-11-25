@@ -43,6 +43,7 @@
                             <th scope="col">Date</th>
                             <th scope="col">Name of User</th>
                             <th scope="col">Total</th>
+                            <th scope="col">Current status</th>
                             <th scope="col">Status</th>
                         </tr>
                     </thead>
@@ -58,6 +59,7 @@
                                 <td><%= order.createdOn.toDateString() %></td>
                                 <td><%= order.user ? order.user.username : 'Unknown User' %></td>
                                 <td><%= order.totalPrice %></td> 
+                                <td><%= order.status %></td>
                                 <td>
                                     <select name="status" data-current-status="<%= order.status %>" onchange="updateStatus('<%= order._id %>', this)">
                                         <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
