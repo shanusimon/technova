@@ -10,7 +10,9 @@ const getCart = async (req,res) => {
         if(!user){
             return res.redirect('/login')
         }
-        const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
+        let cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
+
+        
         if(!cart){
             return res.render('cart',{cart:null,product:[],totalAmount:0});
         }
