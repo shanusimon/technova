@@ -141,7 +141,7 @@ const invoiceDownload = async (req, res) => {
     if (discount !== 0) {
       currentY += 20;
       doc.text('Discount:', margin + 320, currentY)
-         .text(`-${formatCurrency(discount)}`, margin + 420, currentY, { width: 75, align: 'right' });
+         .text(`${formatCurrency(discount)}`, margin + 420, currentY, { width: 75, align: 'right' });
     }
 
     // Add delivery charge
@@ -161,7 +161,7 @@ const invoiceDownload = async (req, res) => {
     currentY += 10;
     doc.fontSize(12)
       .text('Total Amount:', margin + 320, currentY)
-      .text(formatCurrency(finalTotal), margin + 420, currentY, { width: 75, align: 'right' });
+      .text(formatCurrency(Math.abs(finalTotal)), margin + 420, currentY, { width: 75, align: 'right' });
 
     const footerY = currentY + 40;
     doc.fontSize(10)
