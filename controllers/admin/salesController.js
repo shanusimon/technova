@@ -6,10 +6,13 @@ const showSaleReport = async (req,res) => {
         const page= (req.query.page) || 1;
         const limit = 10;
         const skip = (page-1)*limit;
-        const orderData = await Order.find().populate("user").populate("orderedItems.product").sort({createdOn:-1}).skip(skip).limit(limit);
+        const orderData = await Order.find().populate({
+            path: 'user',
+            select: 'username email phone'
+          }).populate("orderedItems.product").sort({createdOn:-1}).skip(skip).limit(limit);
         const count = await Order.countDocuments();
         const totalPages =Math.ceil(count/limit);
-  
+        orderData.forEach(order => console.log(order.user.username));
         if(orderData){
             res.render("salesreport",{orders:orderData,activePage:"sales-report",count:count,totalPages,page})
         }
