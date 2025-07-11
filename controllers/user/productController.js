@@ -139,10 +139,6 @@ const invoiceDownload = async (req, res) => {
        .text(formatCurrency(deliveryCharge), margin + 420, currentY, { width: 75, align: 'right' });
 
     currentY += 20;
-    doc.text('GST (18%):', margin + 320, currentY)
-       .text(formatCurrency(gstAmount), margin + 420, currentY, { width: 75, align: 'right' });
-
-    currentY += 20;
     doc.rect(margin + 320, currentY, contentWidth - 320, 1).fillColor('#000000').fill();
 
     currentY += 10;
@@ -175,9 +171,9 @@ const getCheckOutPage = async (req, res) => {
       const addressDoc = await Address.findOne({ userId: user });
       const addresses = addressDoc ? addressDoc.addresses : [];
 
-      // Handle reload from coupons
+
       if (req.query.reload === 'true') {
-          return res.redirect('/checkout'); // Redirect to clean the URL
+          return res.redirect('/checkout'); 
       }
 
       let totalPrice = 0;
@@ -262,7 +258,7 @@ const getCheckOutPage = async (req, res) => {
         let fullAmount = parsedTotalPrice + parsedDiscount;
         let convTotal = Number(fullAmount);
         let finAmount = parsedTotalPrice - parsedDiscount;
-        finAmount = finAmount + deliveryCharge +(finAmount * 0.18)
+        finAmount = finAmount + deliveryCharge;
         let convfin = Number(finAmount);
 
 

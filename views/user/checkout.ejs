@@ -288,9 +288,9 @@
                                         <td id="discount">₹0</td>
                                     </tr>
                                     <tr>
-                                        <th>Total GST(includes)</th>
+                                        <th>Total</th>
                                         <td id="totalPriceAfterDiscount">
-                                            ₹<%= (totalPrice + 40 + (totalPrice * 0.18)).toLocaleString() %>
+                                            ₹<%= (totalPrice + 40 )%>
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -320,7 +320,7 @@
                                             placeholder="Enter coupon code">
                                         <div class="input-group-append">
                                             <button class="btn btn-outline-secondary" type="button" id="applyCouponbtn"
-                                            onclick="applyCoupon(document.getElementById('totalPriceAfterDiscount').textContent)">Apply</button>
+                                                onclick="applyCoupon(document.getElementById('totalPriceAfterDiscount').textContent)">Apply</button>
                                             <button class="btn btn-outline-secondary" type="button" id="removeCouponbtn"
                                                 onclick="removeCoupon(document.getElementById('totalPriceAfterDiscount').textContent)"
                                                 style="display: none;">Remove</button>
@@ -356,11 +356,11 @@
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-   
+
         <script>
-        if (performance.navigation.type === performance.navigation.TYPE_BACK_FORWARD) {
-            window.location.reload();
-        }
+            if (performance.navigation.type === performance.navigation.TYPE_BACK_FORWARD) {
+                window.location.reload();
+            }
             let variable = 0;
             function syncDiscount() {
                 const discountValue = document.getElementById('discount').innerText.replace('₹', '');
@@ -448,7 +448,7 @@
                         totalAmount: document.getElementById('productAmount').value,
                         couponCode: document.getElementById('couponCode').value
                     };
-
+                    console.log("This is Order Data",orderData)
                     const placeOrderResponse = await fetch('/place-order', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -471,7 +471,7 @@
                     const order = await createOrderResponse.json();
 
                     const options = {
-                        key: 'rzp_test_7ar9vLGVnICf6E',
+                        key: 'rzp_test_n9rpK6dH4jSCiQ',
                         amount: order.amount,
                         currency: order.currency,
                         name: 'Technova',
@@ -576,7 +576,7 @@
                     const response = await fetch('/applyCoupon', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ couponCode: couponValue, totalPrice:numericPrice })
+                        body: JSON.stringify({ couponCode: couponValue, totalPrice: numericPrice })
                     });
 
                     const data = await response.json();
@@ -590,7 +590,7 @@
                         const discountAmount = parseFloat(data.discountAmount);
 
 
-                      
+
                         document.getElementById('discount').textContent = `₹${discountAmount.toLocaleString()}`;
                         document.getElementById('totalPriceAfterDiscount').textContent = `₹${newTotal.toLocaleString()}`;
 
@@ -639,7 +639,7 @@
 
                         const originalPriceFloat = parseFloat(data.subtotal);
                         let newTotal = originalPriceFloat + Number(numericDis);
-                       
+
                         document.getElementById('discount').textContent = "₹0";
                         document.getElementById('totalPriceAfterDiscount').textContent = `₹${newTotal}`
                         document.getElementById('couponCode').value = '';

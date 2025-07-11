@@ -1,7 +1,7 @@
 <%- include("../../views/partials/admin/header") %>
 
     <head>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.css">
+        <link href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet">
     </head>
     <style>
         .error-message {
@@ -31,7 +31,8 @@
             <div class="col-lg-6">
                 <div class="card mb-4">
                     <div class="card-body">
-                        <form method="post" action="/admin/addProducts" enctype="multipart/form-data" onsubmit="return validateForm()">
+                        <form method="post" action="/admin/addproduct" enctype="multipart/form-data" onsubmit="return validateForm()
+">
                             <div class="mb-4">
                                 <label for="product_name" class="form-label">Product Name</label>
                                 <input type="text" placeholder="Type here" name="productName"
@@ -186,8 +187,8 @@
                             </div>
                     </div>
                     <div>
-                        <button class="btn btn-md rounded font-sm hover-up" type="submit"
-                            onclick="validateForm()">Publish</button>
+                        <button class="btn btn-md rounded font-sm hover-up" type="submit" onclick="validateForm()
+">Publish</button>
                     </div>
                     </form>
                 </div>
@@ -195,7 +196,7 @@
         </div>
         </div>
     </section>
-    <script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
+    <script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
 
     <script>
 
@@ -312,9 +313,6 @@
             if (name.trim() === "") {
                 displayErrorMessage('productName-error', 'Please enter a product name.');
                 isValid = false;
-            } else if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
-                displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters.');
-                isValid = false;
             }
 
             if (description.trim() === "") {
@@ -322,16 +320,10 @@
                 isValid = false;
             }
 
-
-
-
             if (parseInt(quantity) < 0) {
                 displayErrorMessage('quantity-error', 'Please enter a valid non-negative quantity.');
                 isValid = false;
             }
-
-
-
 
             if (!/^\d+(\.\d{1,2})?$/.test(price) || parseFloat(price) < 0) {
                 displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
@@ -347,12 +339,10 @@
                 isValid = false;
             }
 
-
             if (color.trim() === "") {
                 displayErrorMessage('color-error', 'Please enter a color.');
                 isValid = false;
             }
-
 
             if (images.files.length === 0) {
                 displayErrorMessage("images-error", 'Please select an image.');
@@ -361,13 +351,11 @@
             return isValid;
         }
 
-
         function displayErrorMessage(elementId, message) {
             var errorElement = document.getElementById(elementId);
             errorElement.innerText = message;
             errorElement.style.display = "block";
         }
-
 
         function clearErrorMessages() {
             const errorElements = document.getElementsByClassName('error-message');
@@ -375,7 +363,6 @@
                 element.innerText = '';
             });
             const errorMessage = document.getElementById('errorMessage');
-
 
         }
 
