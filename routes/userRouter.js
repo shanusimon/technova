@@ -12,7 +12,10 @@ const searchController = require("../controllers/user/searchController");
 const passport = require("passport");
 const User = require("../models/userSchema");
 const Category = require("../models/categorySchema");
+const sessionUserAlias = require("../middlewares/sessionUserAlias")
 
+
+router.use(sessionUserAlias);
 router.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.userData = req.session.userData || null;
@@ -46,13 +49,7 @@ router.use(async (req, res, next) => {
   }
 });
 
-router.get("/pagenotFound", userController.pageNotfound);
-router.get("/", userController.loadHomepage);
-router.get("/shop", userController.loadShop);
-router.get("/signup", userController.loadSignup);
-router.post("/signup", userController.signup);
-router.post("/verify-otp", userController.verifyOtp);
-router.post("/resend-otp", userController.resendOtp);
+
 router.get("/about", (req, res) => {
   return res.render("aboutUs");
 });
@@ -61,13 +58,23 @@ router.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
+
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/signup" }),
   (req, res) => {
+     console.log("✅ Google Login Success: ", req.user);
     res.redirect("/");
   }
 );
+
+router.get("/", userController.loadHomepage);
+router.get("/pagenotFound", userController.pageNotfound);
+router.get("/shop", userController.loadShop);
+router.get("/signup", userController.loadSignup);
+router.post("/signup", userController.signup);
+router.post("/verify-otp", userController.verifyOtp);
+router.post("/resend-otp", userController.resendOtp);
 
 router.get("/userprofile", userController.getuserprofile);
 router.post("/userprofile", userController.saveUserData);

@@ -67,7 +67,6 @@ const orderSchema = new Schema({
             "Return Request Approved",
             "Return Request Rejected",
             "Returned",
-            "Paid"
         ]
     },
     paymentStatus: {

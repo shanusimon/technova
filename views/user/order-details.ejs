@@ -37,11 +37,13 @@
             <div class="row">
                 <div class="col-12">
                     <div class="order-summary">
-                        <h3>Order #<%= order.orderId || 'N/A' %></h3>
+                        <h3>Order #<%= order.orderId.slice(0,7) || 'N/A' %></h3>
                         <br>
                         <p><strong>Order Date:</strong> <%= (order.createdOn).toLocaleDateString() %></p>
                         <br>
-                        <p><strong>Status:</strong> <%= order.status || 'N/A' %></p>
+                        <p><strong>Delivery Status:</strong> <%= order.status || 'N/A' %></p>
+                        <br>
+                        <p><strong>Payment Status:</strong><%= order.paymentStatus || "N/A" %></p>
                         <br>
                         <hr>
 

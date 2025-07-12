@@ -5,8 +5,7 @@ const User = require("../../models/userSchema");
 const fs = require("fs");
 const path = require('path')
 const sharp = require("sharp");
-const { unBlockbrand } = require("./brandController");
-const { error } = require("console");
+
 
 const getProductAddPage = async (req,res)=>{
     try {

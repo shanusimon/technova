@@ -79,13 +79,11 @@ const updateOrder = async (req, res) => {
       const { orderId, paymentId, razorpayOrderId, signature, status } = req.body;
 
       if (status === 'Payment Failed') {
-        console.log("Updating order to Payment Failed...");
           const updatedOrderData = await Order.findOneAndUpdate(
               { _id: orderId }, 
               { paymentStatus: "Failed", status: "Payment Pending" }, 
               { new: true } 
           );
-          console.log(`updated data is ${updatedOrderData}`)
 
           if (updatedOrderData) {
               return res.status(200).json({ message: 'Order marked as failed', updatedOrderData });
@@ -103,7 +101,7 @@ const updateOrder = async (req, res) => {
       if (expectedSignature === signature) {
           const updatedOrderData = await Order.findOneAndUpdate(
               { _id: orderId }, 
-              { paymentStatus: "Completed", status: "Paid" },
+              { paymentStatus: "Completed", status: "Pending" },
               { new: true }
           );
 
