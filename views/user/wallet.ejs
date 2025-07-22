@@ -10,7 +10,6 @@
                     <h2 class="text-center text-primary mb-4 text-success">Your Wallet</h2>
                     <div class="wallet-info d-flex justify-content-between align-items-center p-4 bg-light rounded shadow-sm">
                         <h4 class="font-weight-bold mb-0 text-success">Balance: ₹<%= walletData.balance.toFixed(2) %></h4>
-                        <button class="btn btn-outline-primary px-4" onclick="addFunds()">Add Funds</button>
                     </div>
                     
                     <hr class="my-4" />
@@ -32,7 +31,7 @@
                                     <% walletData.transactions.forEach(transaction => { %>
                                         <tr>
                                             <td><%= new Date(transaction.date).toLocaleDateString() %></td>
-                                            <td><%= transaction.orderId && transaction.orderId.orderId ? transaction.orderId.orderId : transaction.orderId || 'N/A' %></td>
+                                            <td><%= transaction.orderId && transaction.orderId.orderId ? transaction.orderId.orderId.slice(0,5) : transaction.orderId.slice(0,5) || 'N/A' %></td>
                                             <td class="<%= transaction.type%>">
                                                 <%= transaction.type%>
                                             </td>

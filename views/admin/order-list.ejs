@@ -65,8 +65,6 @@
                                         <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                                         <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                                         <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                        <option value="Return Request" <%= order.status === 'Return Request' ? 'selected' : '' %>>Return Request</option>
-                                        <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %>>Returned</option>
                                     </select>                                    
                                 </td>                                
                             </tr>
@@ -102,50 +100,63 @@
 <%- include("../../views/partials/admin/footer") %>
 
 <script>
-   async function updateStatus(orderId, selectElement) {
-    const currentStatus = selectElement.getAttribute("data-current-status");
-    const newStatus = selectElement.value;
+    const statusHierarchy = {
+        "Pending": 1,
+        "Processing": 2,
+        "Shipped": 3,
+        "Delivered": 4,
+        "Cancelled": 5,
+        "Return Request": 6,
+        "Returned": 7
+    };
 
-    if (currentStatus === "Delivered") {
-        Swal.fire({
-            title: "Status Locked",
-            text: "The order is already delivered and cannot be changed to another status.",
-            icon: "warning",
-            confirmButtonText: "OK"
-        });
-        selectElement.value = "Delivered";
-        return;
-    }
+    async function updateStatus(orderId, selectElement) {
+        const currentStatus = selectElement.getAttribute("data-current-status");
+        const newStatus = selectElement.value;
 
-    try {
-        const response = await fetch(`/admin/update-status/${orderId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status: newStatus })
-        });
+        const currentRank = statusHierarchy[currentStatus];
+        const newRank = statusHierarchy[newStatus];
 
-        if (response.ok) {
+        if (newRank < currentRank) {
             Swal.fire({
-                title: 'Success',
-                text: 'Order Status Updated Successfully',
-                icon: 'success',
-                confirmButtonText: 'OK'
+                title: "Invalid Status Change",
+                text: `You cannot move from "${currentStatus}" to "${newStatus}".`,
+                icon: "error",
+                confirmButtonText: "OK"
             });
-            selectElement.setAttribute("data-current-status", newStatus);
-        } else {
-            Swal.fire({
-                title: "Failed",
-                text: "Order Status Update Failed",
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            selectElement.value = currentStatus;
+            selectElement.value = currentStatus; 
+            return;
         }
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
 
+        try {
+            const response = await fetch(`/admin/update-status/${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    title: 'Success',
+                    text: 'Order Status Updated Successfully',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+                selectElement.setAttribute("data-current-status", newStatus);
+            } else {
+                Swal.fire({
+                    title: "Failed",
+                    text: "Order Status Update Failed",
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                selectElement.value = currentStatus;
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
 </script>
+

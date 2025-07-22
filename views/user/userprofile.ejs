@@ -231,16 +231,13 @@
                                     <button class="btn btn-sm btn-outline-danger"
                                       onclick="confirmCancelation('<%= order._id %>', '<%= order.paymentMethod %>')">Cancel</button>
                                     <% } %>
-                                      <% if (order.status && order.status.toLowerCase()==="delivered" ) { %>
+                                      <% if ( order.status !=="Cancelled" && ( order.paymentStatus==="Pending" ||
+                                        (order.paymentStatus==="Failed" && order.paymentMethod==="Online" ) ) ) { %>
                                         <button class="btn btn-sm btn-outline-warning"
-                                          onclick="confirmReturn('<%= order._id %>')">Return</button>
+                                          onclick="confirmPayment('<%= order._id %>', '<%= order.paymentMethod %>')">Pay
+                                          Now</button>
                                         <% } %>
-                                          <% if(order.status !=="Cancelled" && order.paymentStatus=="Pending" ||
-                                            order.paymentStatus=="Failed" && order.paymentMethod=="Online" ){ %>
-                                            <button class="btn btn-sm btn-outline-warning"
-                                              onclick="confirmPayment('<%= order._id %>', '<%= order.paymentMethod %>')">Pay
-                                              Now</button>
-                                            <% } %>
+
                                 </div>
                               </td>
                             </tr>
@@ -397,7 +394,7 @@
           if (paymentMethod === 'Online') {
             Swal.fire({
               title: 'Cancel Order?',
-              text: "The amount will be credited to your wallet upon cancellation.",
+              text: "Amount will be credited to your wallet only if you have done the payment.",
               icon: 'warning',
               showCancelButton: true,
               confirmButtonColor: '#2563eb',
@@ -550,9 +547,9 @@
               const response = await fetch('/return-request', {
                 method: 'POST',
                 headers: {
-                  'Content-Type': 'application/json', 
+                  'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                   orderId: orderId,
                   reason: reason,
                 }),
@@ -560,7 +557,9 @@
 
               const responseData = await response.json();
               if (response.ok) {
-                Swal.fire('Success!', responseData.message, 'success');
+                Swal.fire('Success!', responseData.message, 'success').then(()=>{
+                  location.reload();
+                });
               } else {
                 Swal.fire('Error!', responseData.message, 'error');
               }

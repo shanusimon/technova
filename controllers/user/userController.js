@@ -97,11 +97,29 @@ const cancelOrder = async (req, res) => {
     const userId = req.session.user._id;
     const orderId = req.query.id;
     const orderData = await Order.findById(orderId);
+
+    if (!orderData) {
+      return res.status(404).send("Order not found");
+    }
+
+    if (orderData.status === "Cancelled") {
+      return res.redirect("/userprofile");
+    }
+
+    const orderedItems = orderData.orderedItems;
+    for (const items of orderedItems) {
+      await Product.findByIdAndUpdate(items.product, {
+        $inc: { quantity: items.quantity },
+      });
+    }
+
     if (orderData.paymentMethod === "COD") {
       await Order.findByIdAndUpdate(orderId, { status: "Cancelled" });
       return res.redirect("/userprofile");
-    } else if (orderData.paymentMethod === "Online") {
-      console.log(`the wallet data is ${orderData}`);
+    } else if (
+      orderData.paymentMethod === "Online" &&
+      orderData.paymentStatus === "Completed"
+    ) {
       const amount = orderData.finalAmount;
 
       const walletData = {
@@ -114,7 +132,7 @@ const cancelOrder = async (req, res) => {
           },
         },
       };
-      console.log(`the wallet data is ${walletData}`);
+
       const walletUpdate = await Wallet.findOneAndUpdate(
         { userId: userId },
         walletData,
@@ -124,12 +142,16 @@ const cancelOrder = async (req, res) => {
       if (!walletUpdate) {
         throw new Error("Failed to update Wallet");
       } else {
-        await Order.findByIdAndUpdate(orderId, { status: "Cancelled" });
+        await Order.findByIdAndUpdate(orderId, {
+          status: "Cancelled",
+          paymentStatus: "Refunded",
+        });
       }
     }
+
     return res.redirect("/userprofile");
   } catch (error) {
-    console.log("Error in canceling order");
+    console.log("Error in canceling order", error);
     res.redirect("pagenotFound");
   }
 };
@@ -140,6 +162,7 @@ const returnOrder = async (req, res) => {
     const userId = req.session.user._id;
 
     const orderData = await Order.findById(orderId);
+    console.log(orderData);
     if (!orderData) {
       return res.status(404).json({ message: "Order not found" });
     }
@@ -159,6 +182,9 @@ const returnOrder = async (req, res) => {
     });
 
     await reasonData.save();
+
+    orderData.status = "Return Request";
+    await orderData.save();
 
     return res
       .status(200)
@@ -408,21 +434,17 @@ const resendOtp = async (req, res) => {
         .status(200)
         .json({ success: true, message: "OTP Resent Successfully" });
     } else {
-      return res
-        .status(500)
-        .json({
-          success: false,
-          message: "Failed to resend OTP. Please try again.",
-        });
+      return res.status(500).json({
+        success: false,
+        message: "Failed to resend OTP. Please try again.",
+      });
     }
   } catch (error) {
     console.error("Error resending OTP:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal Server Error: Please try again.",
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error: Please try again.",
+    });
   }
 };
 
