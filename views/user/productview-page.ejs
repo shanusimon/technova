@@ -128,7 +128,7 @@
 
                             <%for(let i=0;i<product.productImage.length;i++){%>
                                 <figure class="border-radius-10">
-                                    <img src="/uploads/re-image/<%= product.productImage[i] %>"
+                                    <img src="<%= product.productImage[i] %>"
                                         alt="<%=product.productName%>">
                                 </figure>
                                 <%}%>
@@ -136,7 +136,7 @@
                         <!-- THUMBNAILS -->
                         <div class="slider-nav-thumbnails pl-15 pr-15">
                             <%for(let i=0;i<product.productImage.length;i++){%>
-                                <div><img src="/uploads/re-image/<%= product.productImage[i] %>" alt="product image">
+                                <div><img src="<%= product.productImage[i] %>" alt="product image">
                                 </div>
                                 <%}%>
                         </div>
@@ -178,20 +178,20 @@
                         <div class="clearfix product-price-cover text-center">
                             <div class="product-price primary-color">
                                 <ins><span class="text-brand">
-                                    ₹ <%=product.salePrice.toLocaleString()%>
+                                        ₹ <%=product.salePrice.toLocaleString()%>
                                     </span></ins>
                                 <ins><span class="old-price font-md ml-15">
-                                    ₹ <%=product.regularPrice.toLocaleString()%>
+                                        ₹ <%=product.regularPrice.toLocaleString()%>
                                     </span></ins>
-                                    <% if (product.productOffer && product.productOffer > 0) { %>
-                                        <span class="save-price font-md color3 ml-15">
-                                            <%= product.productOffer %>% OFF (Product Offer)
-                                        </span>
-                                    <% } else if (cat.categoryOffer && cat.categoryOffer > 0) { %>
+                                <% if (product.productOffer && product.productOffer> 0) { %>
+                                    <span class="save-price font-md color3 ml-15">
+                                        <%= product.productOffer %>% OFF (Product Offer)
+                                    </span>
+                                    <% } else if (cat.categoryOffer && cat.categoryOffer> 0) { %>
                                         <span class="save-price font-md color3 ml-15">
                                             <%= cat.categoryOffer %>% OFF (Category Offer)
                                         </span>
-                                    <% } %>                                    
+                                        <% } %>
                             </div>
                         </div>
                         <div class="bt-1 border-color-1 mt-15 mb-15"></div>
@@ -210,7 +210,8 @@
                                 <form action="/add-to-cart?id=<%= product._id %>" method="POST"
                                     style="display: flex; align-items: center;">
                                     <div class="detail-qty">
-                                        <input type="text" name="quantity" value="1" class="qty-val" id="product-qty" data-max-qty="<%= product.quantity %>" readonly>
+                                        <input type="text" name="quantity" value="1" class="qty-val" id="product-qty"
+                                            data-max-qty="<%= product.quantity %>" readonly>
                                         <div class="qty-controls">
                                             <button type="button" class="qty-up" onclick="updateQuantity(1)">
                                                 <i class="fi-rs-angle-small-up"></i>
@@ -225,15 +226,16 @@
                                     </div>
                                 </form>
 
-                                <button type="button" aria-label="Add To Wishlist" class="action-btn hover-up" 
+                                <button type="button" aria-label="Add To Wishlist" class="action-btn hover-up"
                                     onclick="addToWishlist('<%= product._id %>')">
                                     <i class="fi-rs-heart"></i>
                                 </button>
-  
+
                             </div>
                             <br>
                             <div class="product-extra-link2 d-flex justify-content-center">
-                                <button onclick="redirectToCheckout('<%= product._id %>')" class="btn btn-success w-100" style="max-width: 300px;">Buy Now</button>
+                                <button onclick="redirectToCheckout('<%= product._id %>')" class="btn btn-success w-100"
+                                    style="max-width: 300px;">Buy Now</button>
                             </div>
                             <br>
                             <% } else { %>
@@ -260,7 +262,7 @@
                                                 <li>Availability:<span class="in-stock text-danger ml-5">Out of
                                                         Stock</span></li>
                                             </ul>
-                                        <%}%>
+                                            <%}%>
                     </div>
                 </div>
             </div>
@@ -270,58 +272,79 @@
     <%- include('../partials/user/footer') %>
 
 
-    <script>
-         function redirectToCheckout(productId) {
-        const quantity = document.getElementById('product-qty').value;
-        const url = `/checkout?id=${productId}&quantity=${quantity}`;
-        window.location.href = url;
-         }
-        function updateQuantity(change) {
-            const qtyInput = document.getElementById('product-qty');
-            const maxStockQty = parseInt(qtyInput.getAttribute('data-max-qty')) || 0;
-            const maxAllowedQty = Math.min(5, maxStockQty);
-            let currentQty = parseInt(qtyInput.value) || 1;
-            
-            currentQty = Math.max(1, Math.min(currentQty + change, maxAllowedQty));
-            qtyInput.value = currentQty;
-        }
+        <script>
+            function redirectToCheckout(productId) {
+                const quantity = document.getElementById('product-qty').value;
+                const url = `/checkout?id=${productId}&quantity=${quantity}`;
+                window.location.href = url;
+            }
+            function updateQuantity(change) {
+                const qtyInput = document.getElementById('product-qty');
+                const maxStockQty = parseInt(qtyInput.getAttribute('data-max-qty')) || 0;
+                const maxAllowedQty = Math.min(5, maxStockQty);
+                let currentQty = parseInt(qtyInput.value) || 1;
 
-        async function addToWishlist(productId) {
-            try {
-                const response = await fetch('/add-to-wishlist', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ productId }),
-                });
+                currentQty = Math.max(1, Math.min(currentQty + change, maxAllowedQty));
+                qtyInput.value = currentQty;
+            }
 
-                const data = await response.json();
+            async function addToWishlist(productId) {
+                try {
+                    const response = await fetch('/add-to-wishlist', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ productId }),
+                    });
 
-                if (!response.ok) {
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            Swal.fire({
+                                title: 'Login Required',
+                                text: 'Please login to add products to your wishlist.',
+                                icon: 'warning',
+                                confirmButtonText: 'Login'
+                            }).then(() => {
+                                window.location.href = '/login';
+                            });
+                        } else if (data.message === 'Product already in wishlist') {
+                            Swal.fire({
+                                title: 'Already Added',
+                                text: 'This product is already in your wishlist.',
+                                icon: 'info',
+                                confirmButtonText: 'Okay'
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'There was a problem adding the product.',
+                                icon: 'error',
+                                confirmButtonText: 'Okay'
+                            });
+                        }
+                    } else {
+                        // ✅ Success alert here
+                        Swal.fire({
+                            title: 'Success',
+                            text: data.message || 'Product added to wishlist.',
+                            icon: 'success',
+                            confirmButtonText: 'Okay'
+                        });
+                    }
+
+                } catch (error) {
+                    console.error('Error adding product to wishlist:', error);
                     Swal.fire({
-                        title: 'Sorry',
-                        text: 'There is an error in adding to wishlist',
+                        title: 'Error',
+                        text: 'An unexpected error occurred. Please try again later.',
                         icon: 'error',
                         confirmButtonText: 'Okay'
                     });
-                } else {
-                    Swal.fire({
-                        title: 'Success',
-                        text: 'Product added to wishlist',
-                        icon: 'success',
-                        confirmButtonText: 'Okay'
-                    });
                 }
-            } catch (error) {
-                console.error('Error adding product to wishlist:', error);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'An unexpected error occurred. Please try again later.',
-                    icon: 'error',
-                    confirmButtonText: 'Okay'
-                });
             }
-        }
 
-    </script>
+
+        </script>

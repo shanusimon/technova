@@ -91,32 +91,33 @@ const loadShop = async (req, res) => {
     res.status(500).send("server error");
   }
 };
-
 const cancelOrder = async (req, res) => {
   try {
     const userId = req.session.user._id;
-    const orderId = req.query.id;
-    const orderData = await Order.findById(orderId);
+    const orderId = req.body.orderId;
 
-    if (!orderData) {
-      return res.status(404).send("Order not found");
+    const orderData = await Order.findById(orderId);
+    if (!orderData) return res.status(404).send("Order not found");
+
+    if (orderData.user.toString() !== userId.toString()) {
+      return res.status(403).send("Unauthorized access");
     }
 
     if (orderData.status === "Cancelled") {
       return res.redirect("/userprofile");
     }
 
-    const orderedItems = orderData.orderedItems;
-    for (const items of orderedItems) {
-      await Product.findByIdAndUpdate(items.product, {
-        $inc: { quantity: items.quantity },
+    if (orderData.status === "Delivered") {
+      return res.status(400).send("Order already delivered, cannot cancel.");
+    }
+
+    for (const item of orderData.orderedItems) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { quantity: item.quantity },
       });
     }
 
-    if (orderData.paymentMethod === "COD") {
-      await Order.findByIdAndUpdate(orderId, { status: "Cancelled" });
-      return res.redirect("/userprofile");
-    } else if (
+    if (
       orderData.paymentMethod === "Online" &&
       orderData.paymentStatus === "Completed"
     ) {
@@ -134,25 +135,29 @@ const cancelOrder = async (req, res) => {
       };
 
       const walletUpdate = await Wallet.findOneAndUpdate(
-        { userId: userId },
+        { userId },
         walletData,
         { upsert: true, new: true }
       );
 
-      if (!walletUpdate) {
-        throw new Error("Failed to update Wallet");
-      } else {
-        await Order.findByIdAndUpdate(orderId, {
-          status: "Cancelled",
-          paymentStatus: "Refunded",
-        });
-      }
+      if (!walletUpdate) throw new Error("Failed to update Wallet");
+
+      await Order.findByIdAndUpdate(orderId, {
+        status: "Cancelled",
+        paymentStatus: "Refunded",
+      });
+
+      return res.redirect("/userprofile");
     }
+
+    await Order.findByIdAndUpdate(orderId, {
+      status: "Cancelled",
+    });
 
     return res.redirect("/userprofile");
   } catch (error) {
-    console.log("Error in canceling order", error);
-    res.redirect("pagenotFound");
+    console.error("Error in canceling order", error);
+    res.redirect("/pagenotFound");
   }
 };
 
@@ -523,10 +528,20 @@ const getuserprofile = async (req, res) => {
       const userId = req.session.user._id;
       const user = await User.findById(userId);
       const addressDoc = await Address.findOne({ userId });
-      const orders = await Order.find({ user: userId })
-        .populate("orderedItems.product")
-        .sort({ creaetedOn: -1 });
 
+      const page = parseInt(req.query.page) || 1;
+      const activeTab = req.query.tab || "dashboard";
+      const limit = 7;
+      const skip = (page - 1) * limit;
+      const [orders, totalOrders] = await Promise.all([
+        Order.find({ user: userId })
+          .populate("orderedItems.product")
+          .sort({ createdOn: -1 })
+          .skip(skip)
+          .limit(limit),
+        Order.countDocuments({ user: userId }),
+      ]);
+      const totalPages = Math.ceil(totalOrders / limit);
       if (!user) {
         return res.redirect("/");
       }
@@ -539,7 +554,10 @@ const getuserprofile = async (req, res) => {
         user: user,
         successmessage: successmessage,
         addresses: addresses,
-        orders: orders,
+        orders,
+        currentPage: page,
+        totalPages,
+        activeTab,
       });
     } else {
       res.redirect("/");

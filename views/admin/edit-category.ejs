@@ -1,52 +1,107 @@
-<%- include("../partials/admin/header")  %>
+<%- include("../partials/admin/header") %>
 
-<section class="content-main">
-    <div class="content-header">
-        <h2 class="content-title">Edit Category</h2>
-        <p>Update the category details</p>
-    </div>
-
-    <div class="card">
-        <div class="card-body">
-            <form action="/admin/updateCategory/<%= category._id %>" method="post" onsubmit="return validateEditForm();">
-                <div class="mb-4">
-                    <label for="name" class="form-label">Category Name</label>
-                    <input type="text" class="form-control" id="name" name="name" value="<%= category.name %>">
-                    <small id="editNameError" style="color: red; display: none;">Name is required</small>
-                </div>
-
-                <div class="mb-4">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control" id="description" name="description"><%= category.description %></textarea>
-                    <small id="editDescriptionError" style="color: red; display: none;">Description can't be empty</small>
-                </div>
-
-                <div class="d-grid">
-                    <button class="btn btn-primary" type="submit">Update Category</button>
-                </div>
-            </form>
+    <section class="content-main">
+        <div class="content-header">
+            <h2 class="content-title">Edit Category</h2>
+            <p>Update the category details</p>
         </div>
-    </div>
-</section>
 
-<script>
-function validateEditForm() {
-    const name = document.getElementById('name').value.trim();
-    const description = document.getElementById('description').value.trim();
-    let isValid = true;
+        <div class="card">
+            <div class="card-body">
+                <form id="editCategoryForm">
+                    <div class="mb-4">
+                        <label for="name" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="<%= category.name %>">
+                        <small id="editNameError" style="color: red; display: none;">Name is required</small>
+                    </div>
 
-    if (name === "") {
-        document.getElementById('editNameError').style.display = 'block';
-        isValid = false;
-    }
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description"
+                            name="description"><%= category.description %></textarea>
+                        <small id="editDescriptionError" style="color: red; display: none;">Description can't be
+                            empty</small>
+                    </div>
 
-    if (description === "") {
-        document.getElementById('editDescriptionError').style.display = 'block';
-        isValid = false;
-    }
+                    <div class="d-grid">
+                        <button class="btn btn-primary" type="submit">Update Category</button>
+                    </div>
+                </form>
 
-    return isValid;
-}
-</script>
+            </div>
+        </div>
+    </section>
 
-<%- include("../partials/admin/footer")  %>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const form = document.getElementById('editCategoryForm');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nameInput = document.getElementById('name');
+            const descInput = document.getElementById('description');
+            const nameError = document.getElementById('editNameError');
+            const descError = document.getElementById('editDescriptionError');
+
+            nameError.style.display = 'none';
+            descError.style.display = 'none';
+
+            const name = nameInput.value.trim();
+            const description = descInput.value.trim();
+
+            const alphaRegex = /^[A-Za-z\s]+$/;
+            let isValid = true;
+
+            if (!name || !alphaRegex.test(name)) {
+                nameError.textContent = "Name is required and must contain only alphabets";
+                nameError.style.display = 'block';
+                isValid = false;
+            }
+
+            if (!description) {
+                descError.textContent = "Description is required";
+                descError.style.display = 'block';
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            try {
+                const res = await fetch(`/admin/updateCategory/<%= category._id %>`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, description })
+                });
+
+                const data = await res.json();
+
+                if (res.status === 200) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Category updated successfully',
+                        confirmButtonColor: '#3085d6',
+                    }).then(() => {
+                        window.location.href = "/admin/category";
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: data.error || 'Something went wrong',
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error updating category',
+                });
+            }
+        });
+    </script>
+
+
+
+    <%- include("../partials/admin/footer") %>

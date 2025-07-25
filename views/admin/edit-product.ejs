@@ -264,7 +264,11 @@
             if (name.trim() === "") {
                 displayErrorMessage('productName-error', 'Please enter a product name.');
                 isValid = false;
+            } else if (!/^[A-Za-z0-9\s]+$/.test(name)) {
+                displayErrorMessage('productName-error', 'Product name should contain only alphabets, numbers, and spaces.');
+                isValid = false;
             }
+
 
             if (description.trim() === "") {
                 displayErrorMessage('description-error', 'Please enter a product description.');
@@ -296,15 +300,20 @@
                 isValid = false;
             }
 
-            // ✅ Validate uploaded image types and sizes
-            const imageInputs = [input1, input2, input3, input4];
+            const imageInputs = [
+                document.getElementById("input1"),
+                document.getElementById("input2"),
+                document.getElementById("input3"),
+                document.getElementById("input4")
+            ];
+
             if (!imageDatas && imageInputs.every(input => input.files.length === 0)) {
                 displayErrorMessage("images-error", 'Please select at least one image.');
                 isValid = false;
             }
 
             for (const input of imageInputs) {
-                if (input.files.length > 0) {
+                if (input && input.files.length > 0) {
                     for (const file of input.files) {
                         const result = isValidImage(file);
                         if (!result.valid) {
@@ -351,19 +360,19 @@
         }
 
         function viewImage1(event) {
-            document.getElementById('imgView1').src = URL.createObjectURL(event.target.files[0])
+            document.getElementById('imgView1').src = URL.createObjectURL(event.target.files[0]);
         }
 
         function viewImage2(event) {
-            document.getElementById('imgView2').src = URL.createObjectURL(event.target.files[0])
+            document.getElementById('imgView2').src = URL.createObjectURL(event.target.files[0]);
         }
 
         function viewImage3(event) {
-            document.getElementById('imgView3').src = URL.createObjectURL(event.target.files[0])
+            document.getElementById('imgView3').src = URL.createObjectURL(event.target.files[0]);
         }
 
         function viewImage4(event) {
-            document.getElementById('imgView4').src = URL.createObjectURL(event.target.files[0])
+            document.getElementById('imgView4').src = URL.createObjectURL(event.target.files[0]);
         }
 
         function viewImage(event, index) {
@@ -373,6 +382,7 @@
                 let dataURL = reader.result;
                 let image = document.getElementById('imgView' + index);
                 image.src = dataURL;
+
                 let cropper = new Cropper(image, {
                     aspectRatio: 1,
                     viewMode: 1,
@@ -381,15 +391,19 @@
                     autoCropArea: 1,
                     zoomable: true
                 });
+
                 let cropperContainer = document.querySelector('#croppedImg' + index).parentNode;
-                cropperContainer.style.display = 'block';
-                let saveButton = document.querySelector('#saveButton' + index);
-                saveButton.addEventListener('click', async function () {
+                cropperContainer.style.display = 'flex';
+
+                const saveButton = document.querySelector('#saveButton' + index);
+                const newSaveHandler = async function () {
                     let croppedCanvas = cropper.getCroppedCanvas();
                     let croppedImage = document.getElementById("croppedImg" + index);
                     croppedImage.src = croppedCanvas.toDataURL('image/jpeg', 1.0);
+
                     let timestamp = new Date().getTime();
                     let fileName = `cropped-img-${timestamp}-${index}.png`;
+
                     await croppedCanvas.toBlob(blob => {
                         let input = document.getElementById('input' + index);
                         let imgFile = new File([blob], fileName, { type: blob.type });
@@ -399,7 +413,10 @@
                     });
 
                     cropperContainer.style.display = 'none';
-                });
+                    saveButton.removeEventListener('click', newSaveHandler); // Prevent duplicate listener
+                };
+
+                saveButton.addEventListener('click', newSaveHandler);
             };
             reader.readAsDataURL(input.files[0]);
         }
@@ -423,6 +440,7 @@
             });
         }
     </script>
+
 
 
     <%- include("../../views/partials/admin/footer") %>

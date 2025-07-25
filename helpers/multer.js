@@ -1,14 +1,14 @@
 const multer = require("multer");
-const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary");
 
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'technova', 
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+    public_id: (req, file) => `${Date.now()}-${file.originalname}`,
+  },
+});
 
-const storage =multer.diskStorage({
-    destination:(req,file,cb)=>{
-        cb(null,path.join(__dirname,"../public/uploads/re-image"));
-    },
-    filename:(req,file,cb)=>{
-        cb(null,Date.now()+"-"+file.originalname);
-    }
-})
-
-module.exports = storage;
+module.exports = multer({ storage });

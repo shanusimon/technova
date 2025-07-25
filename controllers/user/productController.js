@@ -7,6 +7,9 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
 const { CLIENT_RENEG_LIMIT } = require("tls");
+const { client: redis } = require("../../helpers/redisClient");
+
+const LOCK_EXPIRY = 30;
 
 const getSuccesspage = async (req, res) => {
   try {
@@ -299,6 +302,21 @@ const placeOrder = async (req, res) => {
       singleProduct,
     } = req.body;
     const userId = req.session.user;
+    const lockKey = `lock:order:${userId._id}`;
+
+    const lock = await redis.set(lockKey, "locked", {
+      NX: true,
+      PX: 60000,
+    });
+
+
+    if (!lock) {
+      return res.status(429).json({
+        success: false,
+        message:
+          "An order is already being processed. Please wait before placing another.",
+      });
+    }
 
     let orderedItems = [];
     if (singleProduct) {
@@ -387,19 +405,30 @@ const placeOrder = async (req, res) => {
     await newOrder.save();
 
     if (payment_option === "COD") {
+      await redis.del(lockKey);
       res.redirect(`/payment-successful?id=${newOrder._id}`);
     } else {
       res.json({ orderId: newOrder._id, finalAmount: finAmount });
     }
   } catch (error) {
     console.error("Error in placing order:", error);
+    redis.del(lockKey);
     res.status(500).send("Internal Server Error");
   }
 };
+
+const paymentFailedPage =async(req,res)=>{
+  try {
+    res.render("order-failed");
+  } catch (error) {
+    console.log(error.message);
+  }
+}
 
 module.exports = {
   getCheckOutPage,
   placeOrder,
   getSuccesspage,
   invoiceDownload,
+  paymentFailedPage
 };

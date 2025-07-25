@@ -1,80 +1,154 @@
 <%- include("../partials/admin/header") %>
-<section class="content-main">
-    <div class="content-header">
-        <div>
-            <h2 class="content-title card-title">Brand Management</h2>
-            <p>Manage brands and vendors</p>
-        </div>
-    </div>
 
-    <!-- Form to add a new brand -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h4>Add New Brand</h4>
+    <section class="content-main">
+        <div class="content-header">
+            <div>
+                <h2 class="content-title card-title">Brand Management</h2>
+                <p>Manage brands and vendors</p>
+            </div>
         </div>
-        <div class="card-body">
-            <form action="/admin/addBrand" method="POST" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label for="brandName" class="form-label">Brand Name</label>
-                    <input type="text" class="form-control" id="brandName" name="brandName" required>
-                </div>
-                <div class="mb-3">
-                    <label for="brandLogo" class="form-label">Brand Logo</label>
-                    <input type="file" class="form-control" id="brandLogo" name="image" required>
-                </div>
-                <div class="mb-3">
-                    <button type="submit" class="btn btn-primary">Add Brand</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Table to display the list of brands -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h4>Brand List</h4>
+        <!-- Form to add a new brand -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Add New Brand</h4>
+            </div>
+            <div class="card-body">
+                <form action="/admin/addBrand" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="brandName" class="form-label">Brand Name</label>
+                        <input type="text" class="form-control" id="brandName" name="brandName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="brandLogo" class="form-label">Brand Logo</label>
+                        <input type="file" class="form-control" id="brandLogo" name="image" required>
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary">Add Brand</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Brand Name</th>
-                        <th>Brand Logo</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% data.reverse().forEach(brand => { %>
-                    <tr>
-                        <td><%= brand.brandName %></td>
-                        <td><img src="/uploads/re-image/<%= brand.brandImage[0] %>" alt="<%= brand.brandName %> Logo" height="50"></td>
-                        <td>
-                            <% if(brand.isBlocked===true){ %>
-                              <span style="background-color: #dc3545; color: white; padding: 5px 10px; border-radius: 12px;">Blocked</span>
-                            <% } else { %>
-                              <span style="background-color: #28a745; color: white; padding: 5px 10px; border-radius: 12px;">Active</span>
-                            <% } %>    
-                        </td>
-                        <td>
-                            <% if(brand.isBlocked === false){ %>
-                                <a href="/admin/blockBrand?id=<%=brand._id%>" class="btn btn-warning text-white">Block</a>
-                            <% } else { %>
-                                <a href="/admin/unBlockbrand?id=<%=brand._id%>" class="btn btn-success text-white">Unblock</a>
-                            <% } %>
-                            <a href="/admin/deleteBrand?id=<%=brand._id%>" class="btn btn-danger text-white" style="width: 90px;" onclick="return confirmDelete()">Delete</a>
-                        </td>
-                    </tr>
-                    <% }) %>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</section>
-<script>
-    function confirmDelete(){
-        return confirm("Are You Sure you want to delete this brand?")
-    }
-</script>
 
-<%- include("../partials/admin/footer") %>
+        <!-- Table to display the list of brands -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Brand List</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Brand Name</th>
+                            <th>Brand Logo</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% data.reverse().forEach(brand=> { %>
+                            <tr data-id="<%= brand._id %>">
+                                <td>
+                                    <%= brand.brandName %>
+                                </td>
+                                <td>
+                                    <img src="<%= brand.brandImage[0] %>" alt="<%= brand.brandName %> Logo" height="50">
+                                </td>
+
+                                <td class="status-badge">
+                                    <% if(brand.isBlocked) { %>
+                                        <span class="badge badge-blocked">Blocked</span>
+                                        <% } else { %>
+                                            <span class="badge badge-active">Active</span>
+                                            <% } %>
+                                </td>
+                                <td>
+                                    <button
+                                        class="btn toggle-btn <%= brand.isBlocked ? 'btn-success' : 'btn-warning' %>"
+                                        data-id="<%= brand._id %>" data-status="<%= brand.isBlocked %>">
+                                        <%= brand.isBlocked ? 'Unblock' : 'Block' %>
+                                    </button>
+
+                                    <a href="/admin/deleteBrand?id=<%= brand._id %>" class="btn btn-danger text-white"
+                                        style="width: 90px;" onclick="return confirmDelete()">Delete</a>
+                                </td>
+                            </tr>
+                            <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Styles for status badges -->
+    <style>
+        .badge-blocked {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+        }
+
+        .badge-active {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+        }
+    </style>
+
+    <!-- SweetAlert and Toggle Script -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmDelete() {
+            return confirm("Are you sure you want to delete this brand?");
+        }
+
+        document.querySelectorAll('.toggle-btn').forEach(button => {
+            button.addEventListener('click', async () => {
+                const brandId = button.dataset.id;
+                const isBlocked = button.dataset.status === 'true';
+                const endpoint = isBlocked ? `/admin/unblockBrand/${brandId}` : `/admin/blockBrand/${brandId}`;
+
+                try {
+                    const res = await fetch(endpoint, { method: 'PATCH' });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        // Toggle UI
+                        button.dataset.status = (!isBlocked).toString();
+                        button.textContent = isBlocked ? "Block" : "Unblock";
+                        button.classList.toggle("btn-warning");
+                        button.classList.toggle("btn-success");
+
+                        const badgeCell = button.closest('tr').querySelector('.status-badge');
+                        badgeCell.innerHTML = isBlocked
+                            ? `<span class="badge badge-active">Active</span>`
+                            : `<span class="badge badge-blocked">Blocked</span>`;
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: `Brand ${isBlocked ? 'unblocked' : 'blocked'} successfully`,
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Failed!',
+                            text: data.error || 'Unexpected error occurred'
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Request failed',
+                        text: 'Something went wrong. Please try again.'
+                    });
+                }
+            });
+        });
+    </script>
+
+    <%- include("../partials/admin/footer") %>

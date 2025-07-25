@@ -12,9 +12,7 @@ const stockController = require("../controllers/admin/stockController");
 const couponController = require("../controllers/admin/couponController");
 const salesController = require("../controllers/admin/salesController");
 const returnController = require("../controllers/admin/returnController");
-const multer = require("multer");
-const storage = require("../helpers/multer");
-const uploads = multer({storage:storage});
+const uploads =require("../helpers/multer")
 router.use(express.static("public"));
 
 //login managment
@@ -25,9 +23,9 @@ router.get('/',adminAuth,adminController.loadDashboard);
 router.get('/logout',adminController.logout);
 
 //Customer Managment
-router.get("/customers",customerController.customerInfo);
-router.get("/block-user",adminAuth,customerController.customerBlocked);
-router.get("/unblock-user",adminAuth,customerController.customerUnblocked)
+router.get("/customers",adminAuth,customerController.customerInfo);
+router.patch("/block-user/:id",adminAuth,customerController.customerBlocked);
+router.patch("/unblock-user/:id",adminAuth,customerController.customerUnblocked)
 
 //category Managment
 router.get("/category",adminAuth,categoryController.categoryInfo);
@@ -42,8 +40,8 @@ router.post("/updateCategory/:id",adminAuth,categoryController.updateCategory)
 //Brand Managment
 router.get("/brands",adminAuth,brandController.getBrandPage);
 router.post("/addBrand",adminAuth,uploads.single('image'),brandController.addBrands);
-router.get("/blockBrand",adminAuth,brandController.blockBrand);
-router.get("/unblockBrand",adminAuth,brandController.unBlockbrand);
+router.patch("/blockBrand/:id",adminAuth,brandController.blockBrand);
+router.patch("/unblockBrand/:id",adminAuth,brandController.unBlockbrand);
 router.get("/deleteBrand",adminAuth,brandController.deleteBrand);
 
 //add Products

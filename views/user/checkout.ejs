@@ -246,7 +246,7 @@
                                     <% if (product) { %>
                                         <tr>
                                             <td>
-                                                <img src="/uploads/re-image/<%= product.productImage[0] %>"
+                                                <img src="<%= product.productImage[0] %>"
                                                     alt="<%= product.productName %>" width="50" height="50"
                                                     class="mr-2">
                                                 <%= product.productName %> (x<%=quantity %>)
@@ -258,7 +258,7 @@
                                             <% cart.items.forEach(item=> { %>
                                                 <tr>
                                                     <td>
-                                                        <img src="/uploads/re-image/<%= item.productId.productImage[0] %>"
+                                                        <img src="<%= item.productId.productImage[0] %>"
                                                             alt="<%= item.productId.productName %>" width="50"
                                                             height="50" class="mr-2">
                                                         <%= item.productId.productName %> (x<%= item.quantity %>)
@@ -448,7 +448,6 @@
                         totalAmount: document.getElementById('productAmount').value,
                         couponCode: document.getElementById('couponCode').value
                     };
-                    console.log("This is Order Data",orderData)
                     const placeOrderResponse = await fetch('/place-order', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -456,7 +455,18 @@
                     });
 
                     if (!placeOrderResponse.ok) {
-                        throw new Error("Order placement failed");
+                        const errorText = await placeOrderResponse.text();
+
+                        if (placeOrderResponse.status === 429) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Order Already Processing',
+                                text: 'You already have an order in progress. Please wait a moment before trying again.',
+                                confirmButtonColor: '#39b4ac',
+                            });
+                            return;
+                        }
+                        throw new Error("Order placement failed: " + errorText);
                     }
 
                     const placeOrderData = await placeOrderResponse.json();
@@ -468,10 +478,11 @@
                         body: JSON.stringify({ amount, currency: 'INR' })
                     });
 
-                    const order = await createOrderResponse.json();
+                    const { order, razorpaykey } = await createOrderResponse.json();
+
 
                     const options = {
-                        key: 'rzp_test_n9rpK6dH4jSCiQ',
+                        key: razorpaykey,
                         amount: order.amount,
                         currency: order.currency,
                         name: 'Technova',
@@ -511,6 +522,23 @@
                                 });
                             }
                         },
+                        modal: {
+                            ondismiss: async function () {
+                                try {
+                                    await fetch('/update-order', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            orderId: placeOrderData.orderId,
+                                            status: 'Cancelled by User'
+                                        })
+                                    })
+                                } catch (error) {
+                                    console.error("Error updating order to 'Cancelled by User':", error);
+                                }
+                                window.location.href = `/payment-failed`;
+                            }
+                        },
                         theme: { color: '#39b4ac' }
                     };
 
@@ -526,7 +554,6 @@
                             confirmButtonColor: '#39b4ac',
                         });
 
-
                         try {
                             await fetch('/update-order', {
                                 method: 'POST',
@@ -537,6 +564,7 @@
                                     paymentError: response.error
                                 })
                             });
+                            window.location.href = `/payment-failed`;
                         } catch (error) {
                             console.error("Error updating order to 'Payment Failed':", error);
                         }
@@ -588,8 +616,6 @@
                         const originalSubtotal = parseFloat(numericPrice);
                         const newTotal = parseFloat(data.newSubtotal);
                         const discountAmount = parseFloat(data.discountAmount);
-
-
 
                         document.getElementById('discount').textContent = `₹${discountAmount.toLocaleString()}`;
                         document.getElementById('totalPriceAfterDiscount').textContent = `₹${newTotal.toLocaleString()}`;

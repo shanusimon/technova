@@ -7,8 +7,14 @@ const path = require("path");
 const userRouter = require("./routes/userRouter");
 const adminRouter = require("./routes/adminRouter");
 const session = require("express-session");
+const {connectRedis} = require("./helpers/redisClient");
+const morgan = require("morgan");
 
 db();
+
+connectRedis()
+  .then(() => console.log("Redis Ready"))
+  .catch((err) => console.error("Redis connection failed:", err));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -24,6 +30,11 @@ app.use(
     },
   })
 );
+app.use(morgan('dev', {
+  skip: function (req, res) {
+    return req.url.match(/\.(css|js|png|jpg|jpeg|gif|svg|woff2?|ttf|eot|ico)$/);
+  }
+}));
 
 app.use(passport.initialize());
 app.use(passport.session());

@@ -79,7 +79,7 @@ router.post("/resend-otp", userController.resendOtp);
 router.get("/userprofile", userController.getuserprofile);
 router.post("/userprofile", userController.saveUserData);
 router.get("/order-details", userController.orderProductDetails);
-router.get("/order-cancel", userController.cancelOrder);
+router.post("/order-cancel", userController.cancelOrder);
 router.get("/sort", userController.sortProduct);
 router.post("/return-request", userController.returnOrder);
 
@@ -111,6 +111,7 @@ router.post("/remove-cart-item", cartController.removeFromCart);
 router.get("/checkout", productController.getCheckOutPage);
 router.post("/place-order", productController.placeOrder);
 router.get("/payment-successful", productController.getSuccesspage);
+router.get("/payment-failed", productController.paymentFailedPage);
 router.get("/download-invoice", productController.invoiceDownload);
 
 //wishlist

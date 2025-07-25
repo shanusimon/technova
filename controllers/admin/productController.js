@@ -30,17 +30,7 @@ const addProducts = async (req, res) => {
 
       if (req.files && req.files.length > 0) {
         for (let i = 0; i < req.files.length; i++) {
-          const originalImagePath = req.files[i].path;
-          const resizedImagePath = path.join(
-            "public",
-            "uploads",
-            "product-images",
-            req.files[i].filename
-          );
-          await sharp(originalImagePath)
-            .resize({ width: 440, height: 440 })
-            .toFile(resizedImagePath);
-          images.push(req.files[i].filename);
+          images.push(req.files[i].path);
         }
       }
 
@@ -226,10 +216,10 @@ const geteditProduct = async (req, res) => {
     res.redirect("/admin/pageerror");
   }
 };
+
 const editProduct = async (req, res) => {
   try {
     const id = req.params.id;
-    const product = await Product.findOne({ _id: id });
     const data = req.body;
     const existingProduct = await Product.findOne({
       productName: data.productName,
@@ -249,7 +239,7 @@ const editProduct = async (req, res) => {
 
     if (req.files && Array.isArray(req.files) && req.files.length > 0) {
       req.files.forEach((file) => {
-        images.push(file.filename);
+        images.push(file.path);
       });
     }
 

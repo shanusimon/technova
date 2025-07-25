@@ -12,7 +12,6 @@ const showSaleReport = async (req,res) => {
           }).populate("orderedItems.product").sort({createdOn:-1}).skip(skip).limit(limit);
         const count = await Order.countDocuments();
         const totalPages =Math.ceil(count/limit);
-        orderData.forEach(order => console.log(order.user.username));
         if(orderData){
             res.render("salesreport",{orders:orderData,activePage:"sales-report",count:count,totalPages,page})
         }

@@ -1,162 +1,187 @@
 <%- include("../../views/partials/admin/header") %>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<section class="content-main">
-    <div class="content-header">
-        <div>
-            <h2 class="content-title card-title">Order List</h2>
-        </div>
-        <div>
-            <input type="text" placeholder="Search order ID" class="form-control bg-white">
-        </div>
-    </div>
-    <div class="card mb-4">
-        <header class="card-header">
-            <div class="row gx-3">
-                <div class="col-lg-4 col-md-6 me-auto">
-                    <input type="text" placeholder="Search..." class="form-control">
-                </div>
-                <div class="col-lg-2 col-6 col-md-3">
-                    <select class="form-select">
-                        <option>Show all</option>
-                        <option>pending</option>
-                        <option>Shipped</option>
-                        <option>Delivered</option>
-                    </select>
-                </div>
-                <div class="col-lg-2 col-6 col-md-3">
-                    <select class="form-select">
-                        <option>Show 20</option>
-                        <option>Show 30</option>
-                        <option>Show 40</option>
-                    </select>
-                </div>
+    <section class="content-main">
+        <div class="content-header">
+            <div>
+                <h2 class="content-title card-title">Order List</h2>
             </div>
-        </header>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>#ID</th>
-                            <th scope="col">Product Name</th>
-                            <th scope="col">Date</th>
-                            <th scope="col">Name of User</th>
-                            <th scope="col">Total</th>
-                            <th scope="col">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% orders.forEach(order => { %>
+            <div>
+                <input type="text" placeholder="Search order ID" class="form-control bg-white">
+            </div>
+        </div>
+        <div class="card mb-4">
+            <header class="card-header">
+                <form id="filterForm" method="get" class="row gx-3">
+                    <div class="col-lg-4 col-md-6 me-auto">
+                        <input type="text" name="search" value="<%= search || '' %>"
+                            placeholder="Search Order ID or Product" class="form-control">
+                    </div>
+                    <div class="col-lg-2 col-6 col-md-3">
+                        <select class="form-select" name="status"
+                            onchange="document.getElementById('filterForm').submit()">
+                            <option value="">All Status</option>
+                            <option value="Pending" <%=status==='Pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="Processing" <%=status==='Processing' ? 'selected' : '' %>>Processing</option>
+                            <option value="Shipped" <%=status==='Shipped' ? 'selected' : '' %>>Shipped</option>
+                            <option value="Delivered" <%=status==='Delivered' ? 'selected' : '' %>>Delivered</option>
+                            <option value="Cancelled" <%=status==='Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-6 col-md-3">
+                        <select class="form-select" name="limit"
+                            onchange="document.getElementById('filterForm').submit()">
+                            <option value="7" <%=limit==7 ? 'selected' : '' %>>Show 7</option>
+                            <option value="20" <%=limit==20 ? 'selected' : '' %>>Show 20</option>
+                            <option value="30" <%=limit==30 ? 'selected' : '' %>>Show 30</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-3">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </form>
+            </header>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
                             <tr>
-                                <td><%= order._id %></td>
-                                <td>
-                                    <% order.orderedItems.forEach(item => { %>
-                                        <%= item.product.productName %><br> 
-                                    <% }) %>
-                                </td>
-                                <td><%= order.createdOn.toDateString() %></td>
-                                <td><%= order.user ? order.user.username : 'Unknown User' %></td>
-                                <td><%= order.totalPrice %></td> 
-                                <td>
-                                    <select name="status" data-current-status="<%= order.status %>" onchange="updateStatus('<%= order._id %>', this)">
-                                        <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
-                                        <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
-                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                    </select>                                    
-                                </td>                                
+                                <th>#ID</th>
+                                <th scope="col">Product Name</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Name of User</th>
+                                <th scope="col">Total</th>
+                                <th scope="col">Status</th>
                             </tr>
-                        <% }) %>
-                    </tbody>                    
-                </table>
+                        </thead>
+                        <tbody>
+                            <% orders.forEach(order=> { %>
+                                <tr>
+                                    <td>
+                                        <%= order._id %>
+                                    </td>
+                                    <td>
+                                        <% order.orderedItems.forEach(item=> { %>
+                                            <%= item.product.productName %><br>
+                                                <% }) %>
+                                    </td>
+                                    <td>
+                                        <%= order.createdOn.toDateString() %>
+                                    </td>
+                                    <td>
+                                        <%= order.user ? order.user.username : 'Unknown User' %>
+                                    </td>
+                                    <td>
+                                        <%= order.totalPrice %>
+                                    </td>
+                                    <td>
+                                        <select name="status" data-current-status="<%= order.status %>"
+                                            onchange="updateStatus('<%= order._id %>', this)">
+                                            <option value="Pending" <%=order.status==='Pending' ? 'selected' : '' %>
+                                                >Pending</option>
+                                            <option value="Processing" <%=order.status==='Processing' ? 'selected' : ''
+                                                %>>Processing</option>
+                                            <option value="Shipped" <%=order.status==='Shipped' ? 'selected' : '' %>
+                                                >Shipped</option>
+                                            <option value="Delivered" <%=order.status==='Delivered' ? 'selected' : '' %>
+                                                >Delivered</option>
+                                            <option value="Cancelled" <%=order.status==='Cancelled' ? 'selected' : '' %>
+                                                >Cancelled</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-    <!-- Pagination Section -->
-    <div class="pagination-area mt-15 mb-50">
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-start">
-                <% if (currentPage > 1) { %>
-                    <li class="page-item">
-                        <a class="page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>">Previous</a>
-                    </li>
-                <% } %>
-                <% for (let i = 1; i <= totalPages; i++) { %>
-                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                        <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
-                    </li>
-                <% } %>
-                <% if (currentPage < totalPages) { %>
-                    <li class="page-item">
-                        <a class="page-link" href="?page=<%= currentPage + 1 %>&limit=<%= limit %>">Next</a>
-                    </li>
-                <% } %>
-            </ul>
-        </nav>
-    </div>
-</section>
-<%- include("../../views/partials/admin/footer") %>
+        <!-- Pagination Section -->
+        <div class="pagination-area mt-15 mb-50">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination justify-content-start">
+                    <% if (currentPage> 1) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>">Previous</a>
+                        </li>
+                        <% } %>
+                            <% for (let i=1; i <=totalPages; i++) { %>
+                                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                    <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>">
+                                        <%= i %>
+                                    </a>
+                                </li>
+                                <% } %>
+                                    <% if (currentPage < totalPages) { %>
+                                        <li class="page-item">
+                                            <a class="page-link"
+                                                href="?page=<%= currentPage + 1 %>&limit=<%= limit %>">Next</a>
+                                        </li>
+                                        <% } %>
+                </ul>
+            </nav>
+        </div>
+    </section>
+    <%- include("../../views/partials/admin/footer") %>
 
-<script>
-    const statusHierarchy = {
-        "Pending": 1,
-        "Processing": 2,
-        "Shipped": 3,
-        "Delivered": 4,
-        "Cancelled": 5,
-        "Return Request": 6,
-        "Returned": 7
-    };
+        <script>
+            const statusHierarchy = {
+                "Pending": 1,
+                "Processing": 2,
+                "Shipped": 3,
+                "Delivered": 4,
+                "Cancelled": 5,
+                "Return Request": 6,
+                "Returned": 7
+            };
 
-    async function updateStatus(orderId, selectElement) {
-        const currentStatus = selectElement.getAttribute("data-current-status");
-        const newStatus = selectElement.value;
+            async function updateStatus(orderId, selectElement) {
+                const currentStatus = selectElement.getAttribute("data-current-status");
+                const newStatus = selectElement.value;
 
-        const currentRank = statusHierarchy[currentStatus];
-        const newRank = statusHierarchy[newStatus];
+                const currentRank = statusHierarchy[currentStatus];
+                const newRank = statusHierarchy[newStatus];
 
-        if (newRank < currentRank) {
-            Swal.fire({
-                title: "Invalid Status Change",
-                text: `You cannot move from "${currentStatus}" to "${newStatus}".`,
-                icon: "error",
-                confirmButtonText: "OK"
-            });
-            selectElement.value = currentStatus; 
-            return;
-        }
+                if (newRank < currentRank) {
+                    Swal.fire({
+                        title: "Invalid Status Change",
+                        text: `You cannot move from "${currentStatus}" to "${newStatus}".`,
+                        icon: "error",
+                        confirmButtonText: "OK"
+                    });
+                    selectElement.value = currentStatus;
+                    return;
+                }
 
-        try {
-            const response = await fetch(`/admin/update-status/${orderId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
+                try {
+                    const response = await fetch(`/admin/update-status/${orderId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    });
 
-            if (response.ok) {
-                Swal.fire({
-                    title: 'Success',
-                    text: 'Order Status Updated Successfully',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-                selectElement.setAttribute("data-current-status", newStatus);
-            } else {
-                Swal.fire({
-                    title: "Failed",
-                    text: "Order Status Update Failed",
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-                selectElement.value = currentStatus;
+                    if (response.ok) {
+                        Swal.fire({
+                            title: 'Success',
+                            text: 'Order Status Updated Successfully',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                        selectElement.setAttribute("data-current-status", newStatus);
+                    } else {
+                        Swal.fire({
+                            title: "Failed",
+                            text: "Order Status Update Failed",
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        selectElement.value = currentStatus;
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                }
             }
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    }
-</script>
-
+        </script>

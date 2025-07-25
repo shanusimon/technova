@@ -3,6 +3,7 @@ const Wallet = require("../../models/walletSchema");
 const Order = require("../../models/orderSchema");
 const Notification = require("../../models/notificationSchema");
 const { Transaction } = require("mongodb");
+const Product = require("../../models/productSchema");
 
 const getReturnApprovals = async (req, res) => {
   try {

@@ -14,8 +14,7 @@
             </button>
         </div>
     </form>
-    
-    
+
     <div class="table-responsive">
         <table class="table table-bordered table-hover">
             <thead class="table-light">
@@ -27,23 +26,25 @@
                 </tr>
             </thead>
             <tbody>
-                <% for(let i = 0; i < data.length; i++) { %>
+                <% data.forEach(user => { %>
                 <tr>
-                    <td><%= data[i].username %></td>
-                    <td><%= data[i].email %></td>
-                    <td><%= data[i].phone %></td>
+                    <td><%= user.username %></td>
+                    <td><%= user.email %></td>
+                    <td><%= user.phone %></td>
                     <td>
-                        <% if(data[i].isBlocked === false) { %>
-                            <a href="/admin/block-user?id=<%= data[i]._id %>" class="btn btn-danger btn-sm">Block</a>
-                        <% } else { %>
-                            <a href="/admin/unblock-user?id=<%= data[i]._id %>" class="btn btn-success btn-sm">Unblock</a>
-                        <% } %>
+                        <button 
+                            class="btn btn-sm toggle-block-btn <%= user.isBlocked ? 'btn-success' : 'btn-danger' %>" 
+                            data-id="<%= user._id %>" 
+                            data-status="<%= user.isBlocked %>">
+                            <%= user.isBlocked ? 'Unblock' : 'Block' %>
+                        </button>
                     </td>
                 </tr>
-                <% } %>
+                <% }) %>
             </tbody>
         </table>
     </div>
+
     <nav aria-label="Page navigation">
         <ul class="pagination justify-content-center">
             <% if (hasPreviousPage) { %>
@@ -65,9 +66,49 @@
     </nav>    
 </div>
 
-<br>
-<br>
-<br>
-<br>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const buttons = document.querySelectorAll('.toggle-block-btn');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            const userId = btn.dataset.id;
+            const isBlocked = btn.dataset.status === "true";
+
+            try {
+                const endpoint = isBlocked ? `/admin/unblock-user/${userId}` : `/admin/block-user/${userId}`;
+                const response = await fetch(endpoint, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (isBlocked) {
+                        btn.textContent = 'Block';
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-danger');
+                        btn.dataset.status = "false";
+                    } else {
+                        btn.textContent = 'Unblock';
+                        btn.classList.remove('btn-danger');
+                        btn.classList.add('btn-success');
+                        btn.dataset.status = "true";
+                    }
+                } else {
+                    alert("Action failed.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Something went wrong.");
+            }
+        });
+    });
+});
+</script>
 
 <%- include("../partials/admin/footer")  %>

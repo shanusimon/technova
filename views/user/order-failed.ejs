@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    :root {
+      --color-red-50: #fef2f2;
+      --color-red-100: #fee2e2;
+      --color-red-200: #fecaca;
+      --color-red-500: #ef4444;
+      --color-red-600: #dc2626;
+      --color-red-700: #b91c1c;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, var(--color-red-50) 0%, var(--color-red-100) 100%);
+    }
+
+    .container {
+      background-color: white;
+      border-radius: 1.5rem;
+      box-shadow: 
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+      padding: 3rem;
+      max-width: 28rem;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--color-red-500), var(--color-red-600));
+    }
+
+    .icon-wrapper {
+      background-color: var(--color-red-100);
+      width: 5rem;
+      height: 5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+    }
+
+    .icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      color: var(--color-red-600);
+      animation: shakeIn 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes shakeIn {
+      0% { transform: scale(0) rotate(0deg); }
+      25% { transform: scale(0.5) rotate(-5deg); }
+      50% { transform: scale(1.1) rotate(5deg); }
+      75% { transform: scale(0.95) rotate(-2deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    h1 {
+      color: var(--color-gray-800);
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      letter-spacing: -0.025em;
+    }
+
+    p {
+      color: var(--color-gray-600);
+      margin-bottom: 2.5rem;
+      font-size: 1.125rem;
+      line-height: 1.5;
+    }
+
+    .error-details {
+      background-color: var(--color-red-50);
+      border: 1px solid var(--color-red-200);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      text-align: left;
+    }
+
+    .error-details h3 {
+      color: var(--color-red-800);
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .error-details p {
+      color: var(--color-red-700);
+      font-size: 0.875rem;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .buttons-container {
+      display: grid;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .button:active {
+      transform: scale(0.98);
+    }
+
+    .button svg {
+      width: 1.25rem;
+      height: 1.25rem;
+      margin-right: 0.5rem;
+    }
+
+    .button-primary {
+      background-color: var(--color-red-600);
+      color: white;
+    }
+
+    .button-primary:hover {
+      background-color: var(--color-red-700);
+      transform: translateY(-2px);
+    }
+
+    .button-secondary {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-700);
+    }
+
+    .button-secondary:hover {
+      background-color: var(--color-gray-200);
+      transform: translateY(-2px);
+    }
+
+    .button-outline {
+      border: 2px solid var(--color-gray-200);
+      color: var(--color-gray-700);
+    }
+
+    .button-outline:hover {
+      background-color: var(--color-gray-50);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        margin: 1rem;
+        padding: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon-wrapper">
+      <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+    </div>
+    <h1>Payment Failed</h1>
+    <p>We were unable to process your payment. Please check your payment details and try again.</p>
+    
+    <div class="error-details">
+      <h3>Error Details</h3>
+      <p>Payment method declined. Please verify your card details or try a different payment method.</p>
+    </div>
+
+    <div class="buttons-container">
+      <a href="/userprofile" class="button button-primary">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        Retry Payment In Your Profile Order Section
+      </a>
+      <a href="/cart" class="button button-secondary">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+        </svg>
+        Back to Cart
+      </a>
+      <a href="/about" class="button button-outline">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM12 18a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V18.75A.75.75 0 0112 18zM2.25 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H3a.75.75 0 01-.75-.75zM18 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H18.75A.75.75 0 0118 12z"></path>
+        </svg>
+        Contact Support
+      </a>
+    </div>
+  </div>
+</body>
+</html>

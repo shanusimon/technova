@@ -64,7 +64,7 @@
                                         <tr>
                                             <td class="image product-thumbnail">
                                                 <% if (item.product && item.product.productImage && item.product.productImage.length > 0) { %>
-                                                    <img src="/uploads/re-image/<%= item.product.productImage[0] %>" 
+                                                    <img src="<%= item.product.productImage[0] %>" 
                                                          alt="<%= item.product.productName %>"
                                                          style="max-width: 100px; height: auto;">
                                                 <% } else { %>
