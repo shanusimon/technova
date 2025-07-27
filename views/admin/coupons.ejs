@@ -33,11 +33,11 @@
           <td><%= element.price %></td>
           <td><%= element.minimumAmount %></td>
           <td><%= element.maximumAmount  %></td>
-          <td><%= element.createdOn %></td>
-          <td><%= element.endOn %></td>
+          <td><%= element.createdOn.toLocaleString() %></td>
+          <td><%= element.endOn.toLocaleString() %></td>
           <td><%= element.isActive ? 'Yes' : 'No' %></td>
           <td>
-            <button>
+            <button class="btn">
               <a onclick="confirmDelete('<%=element._id%>')">Delete</a>
             </button>
           </td>

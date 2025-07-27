@@ -11,46 +11,43 @@
 
     <div class="form-group">
       <label for="price">Discount Price (%)</label>
-      <input type="number" class="form-control" id="price" name="price"  min="0" max="100">
+      <input type="number" class="form-control" id="price" name="price" min="0" max="100">
       <small id="priceError" class="text-danger"></small>
     </div>
 
     <div class="form-group">
       <label for="minimumAmount">Minimum Amount</label>
-      <input type="number" class="form-control" id="minimumAmount" name="minimumAmount" >
+      <input type="number" class="form-control" id="minimumAmount" name="minimumAmount">
       <small id="minAmountError" class="text-danger"></small>
     </div>
 
     <div class="form-group">
       <label for="maximumAmount">Maximum Amount</label>
-      <input type="number" class="form-control" id="maximumAmount" name="maximumAmount" >
+      <input type="number" class="form-control" id="maximumAmount" name="maximumAmount">
       <small id="maxAmountError" class="text-danger"></small>
     </div>
 
     <div class="form-group">
       <label for="createdOn">Created On</label>
-      <input type="date" class="form-control" id="createdOn" name="createdOn" >
+      <input type="date" class="form-control" id="createdOn" name="createdOn">
       <small id="createdOnError" class="text-danger"></small>
     </div>
 
     <div class="form-group">
       <label for="endOn">End On</label>
-      <input type="date" class="form-control" id="endOn" name="endOn" >
+      <input type="date" class="form-control" id="endOn" name="endOn">
       <small id="endOnError" class="text-danger"></small>
     </div>
 
     <button type="submit" class="btn btn-primary mt-3">Add Coupon</button>
   </form>
-  <br>
-  <br>
-  <br>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   document.getElementById('couponForm').addEventListener('submit', async (event) => {
     event.preventDefault();
 
-   
     const errorFields = ['codeError', 'priceError', 'minAmountError', 'maxAmountError', 'createdOnError', 'endOnError'];
     errorFields.forEach(id => document.getElementById(id).innerText = '');
 
@@ -63,26 +60,30 @@
 
     let isValid = true;
 
+    const codeRegex = /^[A-Z0-9]+$/i;
     if (!code.value.trim()) {
       document.getElementById('codeError').innerText = "Coupon code is required.";
+      isValid = false;
+    } else if (!codeRegex.test(code.value.trim())) {
+      document.getElementById('codeError').innerText = "Only letters and numbers are allowed.";
       isValid = false;
     }
 
     if (price.value === '' || price.value < 0 || price.value > 100) {
-      document.getElementById('priceError').innerText = "Discount price must be between 0 and 100.";
+      document.getElementById('priceError').innerText = "Discount must be between 0 and 100.";
       isValid = false;
     }
 
-    if (minimumAmount.value === '') {
-      document.getElementById('minAmountError').innerText = "Minimum amount is required.";
+    if (!minimumAmount.value || minimumAmount.value < 0) {
+      document.getElementById('minAmountError').innerText = "Enter a valid minimum amount.";
       isValid = false;
     }
 
-    if (maximumAmount.value === '') {
-      document.getElementById('maxAmountError').innerText = "Maximum amount is required.";
+    if (!maximumAmount.value || maximumAmount.value < 0) {
+      document.getElementById('maxAmountError').innerText = "Enter a valid maximum amount.";
       isValid = false;
     } else if (Number(minimumAmount.value) > Number(maximumAmount.value)) {
-      document.getElementById('minAmountError').innerText = "Minimum amount cannot be greater than maximum amount.";
+      document.getElementById('minAmountError').innerText = "Minimum cannot be greater than maximum.";
       isValid = false;
     }
 
@@ -95,16 +96,13 @@
       document.getElementById('endOnError').innerText = "End date is required.";
       isValid = false;
     } else if (new Date(createdOn.value) >= new Date(endOn.value)) {
-      document.getElementById('endOnError').innerText = "End date must be after the creation date.";
+      document.getElementById('endOnError').innerText = "End date must be after creation date.";
       isValid = false;
     }
 
-    if (!isValid) {
-      return; 
-    }
+    if (!isValid) return;
 
-
-    const form = document.getElementById('couponForm'); 
+    const form = document.getElementById('couponForm');
     const formData = new FormData(form);
     const formObject = {};
     formData.forEach((value, key) => {
@@ -114,25 +112,36 @@
     try {
       const response = await fetch('/admin/add-coupons', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formObject)
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        alert("Coupon added successfully!"); 
-        form.reset(); 
+        await Swal.fire({
+          icon: 'success',
+          title: 'Coupon Added!',
+          text: 'The coupon was successfully created.',
+        });
+        form.reset();
       } else {
-        alert("Error: " + result.message);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: result.message || 'Something went wrong.',
+        });
       }
     } catch (error) {
-      alert("An unexpected error occurred. Please try again later.");
       console.error("Error:", error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Unexpected Error',
+        text: 'Please try again later.',
+      });
     }
   });
 </script>
-
+<br>
+<br>
 <%- include("../../views/partials/admin/footer") %>

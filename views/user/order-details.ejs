@@ -1,123 +1,147 @@
 <%- include('../partials/user/header') %>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<style>
-    .quantity-control {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .order-info, .item-info {
-        margin-bottom: 20px;
-    }
-    .order-summary {
-        border: 1px solid #ddd;
-        padding: 20px;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-    }
-    .product-thumbnail img {
-        max-width: 100px;
-        height: auto;
-    }
-</style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-<main class="main">
-    <div class="page-header breadcrumb-wrap">
-        <div class="container">
-            <div class="breadcrumb">
-                <a href="/" rel="nofollow">Home</a>
-                <span></span> Orders
-                <span></span> Order Details
+        .order-info,
+        .item-info {
+            margin-bottom: 20px;
+        }
+
+        .order-summary {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .product-thumbnail img {
+            max-width: 100px;
+            height: auto;
+        }
+    </style>
+
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="/" rel="nofollow">Home</a>
+                    <span></span> Orders
+                    <span></span> Order Details
+                </div>
             </div>
         </div>
-    </div>
 
-    <section class="mt-50 mb-50">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="order-summary">
-                        <h3>Order #<%= order.orderId.slice(0,7) || 'N/A' %></h3>
-                        <br>
-                        <p><strong>Order Date:</strong> <%= (order.createdOn).toLocaleDateString() %></p>
-                        <br>
-                        <p><strong>Delivery Status:</strong> <%= order.status || 'N/A' %></p>
-                        <br>
-                        <p><strong>Payment Status:</strong><%= order.paymentStatus || "N/A" %></p>
-                        <br>
-                        <hr>
+        <section class="mt-50 mb-50">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="order-summary">
+                            <h3>Order #<%= order.orderId.slice(0,7) || 'N/A' %>
+                            </h3>
+                            <br>
+                            <p><strong>Order Date:</strong>
+                                <%= (order.createdOn).toLocaleDateString() %>
+                            </p>
+                            <br>
+                            <p><strong>Delivery Status:</strong>
+                                <%= order.status || 'N/A' %>
+                            </p>
+                            <br>
+                            <p><strong>Payment Status:</strong>
+                                <%= order.paymentStatus || "N/A" %>
+                            </p>
+                            <br>
+                            <hr>
 
-                        <!-- Item List -->
-                        <div class="table-responsive">
-                            <table class="table text-center">
-                                <thead>
-                                    <tr class="main-heading">
-                                        <th scope="col">Image</th>
-                                        <th scope="col">Name</th>
-                                        <th scope="col">Price</th>
-                                        <th scope="col">Quantity</th>
-                                        <th scope="col">Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% (order.orderedItems || []).forEach(item => { %>
-                                        <tr>
-                                            <td class="image product-thumbnail">
-                                                <% if (item.product && item.product.productImage && item.product.productImage.length > 0) { %>
-                                                    <img src="<%= item.product.productImage[0] %>" 
-                                                         alt="<%= item.product.productName %>"
-                                                         style="max-width: 100px; height: auto;">
-                                                <% } else { %>
-                                                    <img src="/assets/imgs/default-product.jpg" 
-                                                         alt="Default Image"
-                                                         style="max-width: 100px; height: auto;">
-                                                <% } %>
-                                            </td>
-                                            <td class="product-des product-name">
-                                                <h5 class="product-name">
-                                                    <%= item.product ? item.product.productName : 'Unknown Product' %>
-                                                </h5>
-                                            </td>
-                                            <td class="price">
-                                                <span>₹ <%= item.price ? item.price.toLocaleString() : 'N/A' %></span>
-                                            </td>
-                                            <td class="text-center">
-                                                <span><%= item.quantity || 'N/A' %></span>
-                                            </td>
-                                            <td class="text-right">
-                                                <span>₹ <%= (item.price * item.quantity).toLocaleString() %></span>
-                                            </td>
+                            <!-- Item List -->
+                            <div class="table-responsive">
+                                <table class="table text-center">
+                                    <thead>
+                                        <tr class="main-heading">
+                                            <th scope="col">Image</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Price</th>
+                                            <th scope="col">Quantity</th>
+                                            <th scope="col">Subtotal</th>
                                         </tr>
-                                    <% }); %>
-                                </tbody>                                                  
-                            </table>
-                        </div>
-
-                        <!-- Order Total -->
-                        <div class="row mt-30">
-                            <div class="col-lg-6 offset-lg-6">
-                                <table class="table order-totals">
-                                    <tr>
-                                        <td><strong>Total Amount:</strong></td>
-                                        <td><strong>₹ <%= order.finalAmount ? order.finalAmount.toLocaleString() : '0' %></strong></td>
-                                    </tr>
-                                    <tr>
-                                        <strong>payment method</strong>
-                                        <h5><%= order.paymentMethod  %></h5>
-                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% (order.orderedItems || []).forEach(item=> { %>
+                                            <tr>
+                                                <td class="image product-thumbnail">
+                                                    <% if (item.product && item.product.productImage &&
+                                                        item.product.productImage.length> 0) { %>
+                                                        <img src="<%= item.product.productImage[0] %>"
+                                                            alt="<%= item.product.productName %>"
+                                                            style="max-width: 100px; height: auto;">
+                                                        <% } else { %>
+                                                            <img src="/assets/imgs/default-product.jpg"
+                                                                alt="Default Image"
+                                                                style="max-width: 100px; height: auto;">
+                                                            <% } %>
+                                                </td>
+                                                <td class="product-des product-name">
+                                                    <h5 class="product-name">
+                                                        <%= item.product ? item.product.productName : 'Unknown Product'
+                                                            %>
+                                                    </h5>
+                                                </td>
+                                                <td class="price">
+                                                    <span>₹ <%= item.price ? item.price.toLocaleString() : 'N/A' %>
+                                                            </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span>
+                                                        <%= item.quantity || 'N/A' %>
+                                                    </span>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span>₹ <%= (item.price * item.quantity).toLocaleString() %></span>
+                                                </td>
+                                            </tr>
+                                            <% }); %>
+                                    </tbody>
                                 </table>
                             </div>
-                        </div>
 
-                        <!-- Back to Orders Button -->
-                        <div class="text-end mt-30">
-                            <a href="/userProfile" class="btn"><i class="fi-rs-arrow-left mr-10"></i> Back to Orders</a>
+                            <!-- Order Total -->
+                            <div class="row mt-30">
+                                <div class="col-lg-6 offset-lg-6">
+                                    <table class="table order-totals">
+                                        <tr>
+                                            <td><strong>Total Amount:</strong></td>
+                                            <td><strong>₹ <%= order.finalAmount ? order.finalAmount.toLocaleString()
+                                                        : '0' %></strong></td>
+                                        </tr>
+                                        <tr>
+                                            <strong>payment method</strong>
+                                            <h5>
+                                                <%= order.paymentMethod %>
+                                            </h5>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Back to Orders Button -->
+                            <div class="text-end mt-30 d-flex justify-content-end gap-3">
+                                <a href="/userProfile" class="btn btn-light">
+                                    <i class="fi-rs-arrow-left mr-10"></i> Back to Orders
+                                </a>
+                                <a href="/download-invoice?id=<%= order._id %>" class="btn btn-primary" >
+                                    <i class="fi-rs-download mr-10"></i> Download Invoice
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-</main>
+        </section>
+    </main>
 
-<%- include('../partials/user/footer') %>
+    <%- include('../partials/user/footer') %>

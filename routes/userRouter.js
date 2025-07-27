@@ -13,7 +13,9 @@ const passport = require("passport");
 const User = require("../models/userSchema");
 const Category = require("../models/categorySchema");
 const sessionUserAlias = require("../middlewares/sessionUserAlias")
-
+const addressController = require("../controllers/user/addressController");
+const orderController = require("../controllers/user/orderController")
+const authController = require("../controllers/user/authController");
 
 router.use(sessionUserAlias);
 router.use((req, res, next) => {
@@ -73,15 +75,15 @@ router.get("/pagenotFound", userController.pageNotfound);
 router.get("/shop", userController.loadShop);
 router.get("/signup", userController.loadSignup);
 router.post("/signup", userController.signup);
-router.post("/verify-otp", userController.verifyOtp);
-router.post("/resend-otp", userController.resendOtp);
+router.post("/verify-otp", authController.verifyOtp);
+router.post("/resend-otp", authController.resendOtp);
 
 router.get("/userprofile", userController.getuserprofile);
 router.post("/userprofile", userController.saveUserData);
-router.get("/order-details", userController.orderProductDetails);
-router.post("/order-cancel", userController.cancelOrder);
-router.get("/sort", userController.sortProduct);
-router.post("/return-request", userController.returnOrder);
+router.get("/order-details", orderController.orderProductDetails);
+router.post("/order-cancel", orderController.cancelOrder);
+router.get("/sort", orderController.sortProduct);
+router.post("/return-request", orderController.returnOrder);
 
 //profile managment
 router.get("/forgot-password", profileController.getForgotPassPage);
@@ -92,15 +94,15 @@ router.post("/resend-forgot-otp", profileController.resendOtp);
 router.post("/reset-password", profileController.postNewPassword);
 
 //address routes
-router.get("/add-address", userController.getAddAddress);
-router.post("/add-address", userController.saveAddress);
-router.get("/edit-address", userController.getEditAddress);
-router.post("/save-address", userController.saveEditAddress);
-router.get("/delete-address", userController.deleteAddress);
+router.get("/add-address", addressController.getAddAddress);
+router.post("/add-address", addressController.saveAddress);
+router.get("/edit-address", addressController.getEditAddress);
+router.post("/save-address", addressController.saveEditAddress);
+router.get("/delete-address", addressController.deleteAddress);
 
-router.get("/login", userController.loadlogin);
-router.post("/login", userController.login);
-router.get("/logout", userController.logout);
+router.get("/login", authController.loadlogin);
+router.post("/login", authController.login);
+router.get("/logout", authController.logout);
 
 router.get("/productDeatils", userController.viewProduct);
 router.get("/cart", cartController.getCart);
@@ -109,7 +111,7 @@ router.post("/update-cart-quantity", cartController.updateQuantity);
 router.post("/remove-cart-item", cartController.removeFromCart);
 
 router.get("/checkout", productController.getCheckOutPage);
-router.post("/place-order", productController.placeOrder);
+router.post("/place-order", orderController.placeOrder);
 router.get("/payment-successful", productController.getSuccesspage);
 router.get("/payment-failed", productController.paymentFailedPage);
 router.get("/download-invoice", productController.invoiceDownload);

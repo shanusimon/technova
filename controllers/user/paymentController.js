@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const Order = require("../../models/orderSchema");
 const { client: redis } = require("../../helpers/redisClient");
 const Product = require("../../models/productSchema");
-const User = require("../../models/userSchema")
+const User = require("../../models/userSchema");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZOR_PAY_KEY_ID,
@@ -74,7 +74,7 @@ const createRazorpay = async (req, res) => {
     };
     const order = await razorpay.orders.create(options);
     const razorpaykey = process.env.RAZOR_PAY_KEY_ID;
-    res.json({order,razorpaykey});
+    res.json({ order, razorpaykey });
   } catch (error) {
     console.error("Error creating Razorpay order:", error);
     res.status(500).json({ message: "Unable to create order", error });
@@ -82,10 +82,11 @@ const createRazorpay = async (req, res) => {
 };
 
 const updateOrder = async (req, res) => {
+  const userId = req.session.user;
+  const lockKey = `lock:order:${userId._id}`;
   try {
     const { orderId, paymentId, razorpayOrderId, signature, status } = req.body;
-    const userId = req.session.user;
-    const lockKey = `lock:order:${userId._id}`;
+
     if (status === "Payment Failed") {
       const updatedOrderData = await Order.findOneAndUpdate(
         { _id: orderId },
@@ -104,13 +105,15 @@ const updateOrder = async (req, res) => {
       }
     }
     if (status === "Cancelled by User") {
-        const order = await Order.findById(orderId).populate("orderedItems.product");
-         if (!order) {
+      const order = await Order.findById(orderId).populate(
+        "orderedItems.product"
+      );
+      if (!order) {
         await redis.del(lockKey);
         return res.status(404).json({ message: "Order not found" });
       }
-       await Promise.all(
-        order.orderedItems.map(item =>
+      await Promise.all(
+        order.orderedItems.map((item) =>
           Product.findByIdAndUpdate(item.product._id, {
             $inc: { quantity: item.quantity },
           })

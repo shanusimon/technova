@@ -1,4 +1,5 @@
 const Coupons = require('../../models/couponSchema');
+const User = require('../../models/userSchema');
 const { find } = require('../../models/userSchema');
 const { getAddAddress } = require('../user/userController');
 
@@ -27,8 +28,7 @@ const getaddCouponPage = async (req,res) => {
 const addCoupon = async (req,res) => {
     try {
         const {code,price,minimumAmount,maximumAmount,createdOn,endOn} = req.body;
-        console.log(req.body);
-        const CouponExisting = await Coupons.findOne({code});
+        const CouponExisting = await Coupons.findOne({code :code.toUpperCase()});
         if (CouponExisting) {
             return res.status(400).json({ message: "This coupon already exists" }); 
           }
@@ -40,7 +40,7 @@ const addCoupon = async (req,res) => {
         const isActive = currentDate >= createdOnDate && currentDate <= endOnDate;
 
         const newCoupon = new Coupons({
-            code,
+            code:code.toUpperCase(),
             price,
             minimumAmount,  
             maximumAmount,
@@ -62,11 +62,18 @@ const addCoupon = async (req,res) => {
 const deleteCoupon = async (req, res) => {
     try {
       const couponId = req.query.id;
-      console.log("deleteCoupon etred",couponId)
       if (!couponId) {
         return res.status(400).json({ message: 'Coupon ID is required' });
       }
-  
+      const coupon = await Coupons.findById(couponId);
+      if(!coupon){
+        return res.status(404).json({success:false,message:"Coupon not found"})
+      }
+      await User.updateMany(
+        {redeemedcoupon:coupon.code},
+        {$pull:{redeemedcoupon:coupon.code}}
+      )
+
       const deletedCoupon = await Coupons.findByIdAndDelete(couponId);
 
       if (!deletedCoupon) {

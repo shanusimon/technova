@@ -455,7 +455,18 @@
                     });
 
                     if (!placeOrderResponse.ok) {
-                        const errorText = await placeOrderResponse.text();
+                      const errorData = await placeOrderResponse.json();
+                
+                        if(placeOrderResponse.status === 400){
+                           
+                            Swal.fire({
+                                icon:'warning',
+                                title:"Out Of Stock",
+                                text:`${errorData.message}`,
+                                 confirmButtonColor: '#39b4ac',
+                            })
+                            return;
+                        }
 
                         if (placeOrderResponse.status === 429) {
                             Swal.fire({
@@ -466,7 +477,7 @@
                             });
                             return;
                         }
-                        throw new Error("Order placement failed: " + errorText);
+                        throw new Error("Order placement failed: " + errorData.message);
                     }
 
                     const placeOrderData = await placeOrderResponse.json();

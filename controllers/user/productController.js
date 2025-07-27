@@ -6,10 +6,6 @@ const Order = require("../../models/orderSchema");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
-const { CLIENT_RENEG_LIMIT } = require("tls");
-const { client: redis } = require("../../helpers/redisClient");
-
-const LOCK_EXPIRY = 30;
 
 const getSuccesspage = async (req, res) => {
   try {
@@ -72,6 +68,10 @@ const invoiceDownload = async (req, res) => {
     const margin = 50;
     const contentWidth = pageWidth - margin * 2;
 
+    const ship = order.address;
+
+    const billX = margin;
+
     doc
       .fontSize(20)
       .text("TechNova", pageWidth - 200, 50, { width: 150, align: "right" });
@@ -93,7 +93,37 @@ const invoiceDownload = async (req, res) => {
       .fontSize(10)
       .text("BILL TO:", margin, detailsY)
       .text(order.user.username, margin, detailsY + 20)
-      .text(order.user.address, margin, detailsY + 35, { width: 200 });
+      .text(order.user.email || "", margin, detailsY + 35, { width: 200 });
+
+  const shipX = 250;
+let shipY = detailsY;
+
+doc.fontSize(10).text("SHIP TO:", shipX, shipY);
+
+shipY += 15;
+if (ship?.name) {
+  doc.text(ship.name, shipX, shipY);
+  shipY += 15;
+}
+
+const addressLine = [ship?.landMark, ship?.city, ship?.state]
+  .filter(Boolean)
+  .join(", ");
+if (addressLine) {
+  doc.text(addressLine, shipX, shipY, { width: 200 });
+  shipY += 15;
+}
+
+if (ship?.pincode) {
+  doc.text(`Pincode: ${ship.pincode}`, shipX, shipY);
+  shipY += 15;
+}
+
+if (ship?.phone) {
+  doc.text(`Phone: ${ship.phone}`, shipX, shipY);
+  shipY += 15;
+}
+
 
     doc
       .fontSize(10)
@@ -290,145 +320,17 @@ const getCheckOutPage = async (req, res) => {
   }
 };
 
-const placeOrder = async (req, res) => {
-  try {
-    let {
-      cart,
-      totalPrice,
-      couponCode,
-      payment_option,
-      discount,
-      addressId,
-      singleProduct,
-    } = req.body;
-    const userId = req.session.user;
-    const lockKey = `lock:order:${userId._id}`;
-
-    const lock = await redis.set(lockKey, "locked", {
-      NX: true,
-      PX: 60000,
-    });
-
-
-    if (!lock) {
-      return res.status(429).json({
-        success: false,
-        message:
-          "An order is already being processed. Please wait before placing another.",
-      });
-    }
-
-    let orderedItems = [];
-    if (singleProduct) {
-      const product = JSON.parse(singleProduct);
-      orderedItems.push({
-        product: product._id,
-        quantity: 1,
-        price: product.salePrice,
-      });
-      await Product.findByIdAndUpdate(product._id, {
-        $inc: { quantity: -1 },
-      });
-    } else {
-      const cartItems = JSON.parse(cart);
-
-      for (const item of cartItems) {
-        const dbProduct = await Product.findById(item.productId);
-        if (!dbProduct || dbProduct.quantity < item.quantity) {
-          return res.status(400).json({
-            success: false,
-            message: `Insufficient stock for "${
-              dbProduct?.name || "a product"
-            }". Available: ${dbProduct?.quantity || 0}, Requested: ${
-              item.quantity
-            }`,
-          });
-        }
-      }
-      orderedItems = cartItems.map((item) => ({
-        product: item.productId,
-        quantity: item.quantity,
-        price: item.totalPrice / item.quantity,
-      }));
-      for (const item of cartItems) {
-        await Product.findByIdAndUpdate(item.productId, {
-          $inc: { quantity: -item.quantity },
-        });
-      }
-    }
-
-    let deliveryCharge = 40;
-
-    const couponApplied = Boolean(couponCode && couponCode.trim() !== "");
-
-    const parsedTotalPrice = Number(totalPrice) || 0;
-    const parsedDiscount = Number(discount) || 0;
-
-    let fullAmount = parsedTotalPrice + parsedDiscount;
-    let convTotal = Number(fullAmount);
-    let finAmount = parsedTotalPrice - parsedDiscount;
-    finAmount = finAmount + deliveryCharge;
-    let convfin = Number(finAmount);
-
-    if (discount == 0) {
-      couponCode = undefined;
-    }
-
-    const orderData = {
-      orderedItems,
-      totalPrice: convTotal.toFixed(2),
-      finalAmount: convfin.toFixed(2),
-      deliveryCharge,
-      couponCode,
-      discount,
-      couponApplied,
-      user: userId,
-      address: addressId,
-      paymentMethod: payment_option,
-    };
-
-    if (payment_option === "COD") {
-      orderData.status = "Pending";
-      orderData.paymentStatus = "Not Applicable";
-    } else if (payment_option === "Online") {
-      orderData.status = "Pending";
-      orderData.paymentStatus = "Pending";
-    }
-
-    if (discount !== 0) {
-      await User.findByIdAndUpdate(userId, {
-        $push: { redeemedcoupon: couponCode },
-      });
-    }
-
-    const newOrder = new Order(orderData);
-    await newOrder.save();
-
-    if (payment_option === "COD") {
-      await redis.del(lockKey);
-      res.redirect(`/payment-successful?id=${newOrder._id}`);
-    } else {
-      res.json({ orderId: newOrder._id, finalAmount: finAmount });
-    }
-  } catch (error) {
-    console.error("Error in placing order:", error);
-    redis.del(lockKey);
-    res.status(500).send("Internal Server Error");
-  }
-};
-
-const paymentFailedPage =async(req,res)=>{
+const paymentFailedPage = async (req, res) => {
   try {
     res.render("order-failed");
   } catch (error) {
     console.log(error.message);
   }
-}
+};
 
 module.exports = {
   getCheckOutPage,
-  placeOrder,
   getSuccesspage,
   invoiceDownload,
-  paymentFailedPage
+  paymentFailedPage,
 };
