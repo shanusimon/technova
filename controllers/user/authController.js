@@ -1,6 +1,56 @@
 const User = require("../../models/userSchema");
 const Wallet = require("../../models/walletSchema");
+const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
+
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function sendVerificationEmail(email, otp) {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: {
+        user: process.env.NODEMAILER_EMAIL,
+        pass: process.env.NODEMAILER_PASSWORD,
+      },
+    });
+    const info = await transporter.sendMail({
+      from: process.env.NODEMAILER_EMAIL,
+      to: email,
+      subject: "Verify your Account",
+      text: `Your OTP is ${otp}`,
+      html: `<b>Your OTP: ${otp}</b>`,
+    });
+    return info.accepted.length > 0;
+  } catch (error) {
+    console.log("Error sending email", error);
+    return false;
+  }
+}
+
+const securePassword = async (password) => {
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+    return passwordHash;
+  } catch (error) {}
+};
+
+const generateCoupon = (length) => {
+  let result = "";
+  const charcters = "abcdef0123456789";
+
+  for (let i = 0; i < length; i++) {
+    result += charcters[Math.floor(Math.random() * charcters.length)];
+  }
+
+  return result;
+};
+
 
 const verifyOtp = async (req, res) => {
   try {
@@ -165,10 +215,54 @@ const logout = async (req, res) => {
   }
 };
 
+const signup = async (req, res) => {
+  try {
+    const { username, phone, email, password, cpassword, referral_code } =
+      req.body;
+
+    if (password != cpassword) {
+      return res.render("signup", { message: "Passwords do not match" });
+    }
+
+    const findUser = await User.findOne({ email });
+    console.log(findUser);
+    if (findUser) {
+      return res.render("signup", {
+        message: "User with this email already exists",
+      });
+    }
+
+    const otp = generateOtp();
+    console.log(email);
+    const emailSent = await sendVerificationEmail(email, otp);
+    console.log("otp generated");
+
+    if (!emailSent) {
+      return res.json("email-error");
+    }
+    console.log("User Data to store in session:", {
+      username,
+      phone,
+      email,
+      password,
+    });
+
+    req.session.userOtp = otp;
+    req.session.userData = { username, phone, email, password, referral_code };
+
+    res.render("verify-otp");
+    console.log("OTP sent", otp);
+  } catch (error) {
+    console.error("Signup eror", error);
+    res.redirect("/pageNotFound");
+  }
+};
+
 module.exports = {
   verifyOtp,
   resendOtp,
   loadlogin,
   login,
   logout,
+  signup
 };

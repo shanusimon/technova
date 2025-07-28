@@ -74,7 +74,7 @@ router.get("/", userController.loadHomepage);
 router.get("/pagenotFound", userController.pageNotfound);
 router.get("/shop", userController.loadShop);
 router.get("/signup", userController.loadSignup);
-router.post("/signup", userController.signup);
+router.post("/signup", authController.signup);
 router.post("/verify-otp", authController.verifyOtp);
 router.post("/resend-otp", authController.resendOtp);
 
