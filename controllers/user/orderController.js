@@ -183,8 +183,8 @@ const orderProductDetails = async (req, res) => {
 };
 
 const placeOrder = async (req, res) => {
-    const userId = req.session.user;
-   const lockKey = `lock:order:${userId._id}`;
+  const userId = req.session.user;
+  const lockKey = `lock:order:${userId._id}`;
   try {
     let {
       cart,
@@ -196,13 +196,10 @@ const placeOrder = async (req, res) => {
       singleProduct,
     } = req.body;
 
-   
-
     const lock = await redis.set(lockKey, "locked", {
       NX: true,
       PX: 60000,
     });
-
 
     if (!lock) {
       return res.status(429).json({
@@ -216,12 +213,25 @@ const placeOrder = async (req, res) => {
     if (singleProduct) {
       const product = JSON.parse(singleProduct);
       const dbProduct = await Product.findById(product._id);
-      if(!dbProduct || product.quantity > dbProduct.quantity){
-         await redis.del(lockKey);
-         return res.status(400).json({
-      success: false,
-      message: `Insufficient stock for "${dbProduct?.productName || "product"}". Available: ${dbProduct?.quantity || 0}`,
-    });
+
+      if (!dbProduct || dbProduct.isBlocked) {
+        await redis.del(lockKey);
+        return res.status(400).json({
+          success: false,
+          message: `"${
+            dbProduct?.productName || "Product"
+          }" is currently blocked and cannot be ordered.`,
+        });
+      }
+
+      if (!dbProduct || product.quantity > dbProduct.quantity) {
+        await redis.del(lockKey);
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for "${
+            dbProduct?.productName || "product"
+          }". Available: ${dbProduct?.quantity || 0}`,
+        });
       }
       orderedItems.push({
         product: product._id,
@@ -236,6 +246,16 @@ const placeOrder = async (req, res) => {
 
       for (const item of cartItems) {
         const dbProduct = await Product.findById(item.productId);
+        if (!dbProduct || dbProduct.isBlocked) {
+          await redis.del(lockKey);
+          return res.status(400).json({
+            success: false,
+            message: `"${
+              dbProduct?.productName || "A product"
+            }" is currently blocked and cannot be ordered.`,
+          });
+        }
+
         if (!dbProduct || dbProduct.quantity < item.quantity) {
           await redis.del(lockKey);
           return res.status(400).json({
@@ -265,9 +285,8 @@ const placeOrder = async (req, res) => {
     const couponApplied = Boolean(couponCode && couponCode.trim() !== "");
 
     const parsedTotalPrice = Number(totalPrice) || 0;
- 
-    const parsedDiscount = Number(discount?.toString().replace(/,/g, '')) || 0;
 
+    const parsedDiscount = Number(discount?.toString().replace(/,/g, "")) || 0;
 
     let fullAmount = parsedTotalPrice + parsedDiscount;
     let convTotal = Number(fullAmount);
@@ -279,12 +298,14 @@ const placeOrder = async (req, res) => {
       couponCode = undefined;
     }
 
-    const addressDoc = await Address.findOne({userId:userId});
+    const addressDoc = await Address.findOne({ userId: userId });
     const selectedAddress = addressDoc.addresses.id(addressId);
 
-    if(!selectedAddress){
+    if (!selectedAddress) {
       await redis.del(lockKey);
-       return res.status(404).json({ success: false, message: "Address not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Address not found" });
     }
 
     const orderData = {
@@ -293,7 +314,7 @@ const placeOrder = async (req, res) => {
       finalAmount: convfin.toFixed(2),
       deliveryCharge,
       couponCode,
-      discount:parsedDiscount,
+      discount: parsedDiscount,
       couponApplied,
       user: userId,
       address: selectedAddress.toObject(),
@@ -330,11 +351,10 @@ const placeOrder = async (req, res) => {
   }
 };
 
-
 module.exports = {
-    sortProduct,
-    cancelOrder,
-    returnOrder,
-    orderProductDetails,
-    placeOrder
-}
+  sortProduct,
+  cancelOrder,
+  returnOrder,
+  orderProductDetails,
+  placeOrder,
+};
