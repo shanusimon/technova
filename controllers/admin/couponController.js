@@ -1,20 +1,37 @@
 const Coupons = require('../../models/couponSchema');
 const User = require('../../models/userSchema');
-const { find } = require('../../models/userSchema');
-const { getAddAddress } = require('../user/userController');
 
 
-const getCouponPage = async (req,res) => {
-    try {
-        const allCoupons = await Coupons.find();
-        res.render('coupons',{
-            data:allCoupons
-        });
-    } catch (error) {
-        console.log("Error in loading Coupon page")
-    }
-    
-}
+const getCouponPage = async (req, res) => {
+  try {
+
+    const page = parseInt(req.query.page) || 1;
+
+
+    const limit = 5;
+    const skip = (page - 1) * limit;
+
+
+    const totalCoupons = await Coupons.countDocuments();
+
+    const allCoupons = await Coupons.find()
+      .sort({ createdOn: -1 }) 
+      .skip(skip)
+      .limit(limit);
+
+    const totalPages = Math.ceil(totalCoupons / limit);
+
+    res.render("coupons", {
+      data: allCoupons,
+      currentPage: page,
+      totalPages
+    });
+  } catch (error) {
+    console.log("Error in loading Coupon page", error);
+    res.status(500).send("Error loading coupons");
+  }
+};
+
 
 const getaddCouponPage = async (req,res) => {
     try {

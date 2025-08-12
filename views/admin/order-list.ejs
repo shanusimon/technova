@@ -53,6 +53,7 @@
                                 <th scope="col">Name of User</th>
                                 <th scope="col">Total</th>
                                 <th scope="col">Status</th>
+                                <th scope="col">Details</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -89,6 +90,12 @@
                                             <option value="Cancelled" <%=order.status==='Cancelled' ? 'selected' : '' %>
                                                 >Cancelled</option>
                                         </select>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info"
+                                            onclick="showOrderDetails('<%- encodeURIComponent(JSON.stringify(order)) %>')">
+                                            View Details
+                                        </button>
                                     </td>
                                 </tr>
                                 <% }) %>
@@ -183,5 +190,60 @@
                 } catch (error) {
                     console.error("Error:", error);
                 }
+            }
+            function showOrderDetails(orderJson) {
+                console.log(orderJson)
+                let order;
+                try {
+                    order = JSON.parse(decodeURIComponent(orderJson));
+                } catch (err) {
+                    console.error("Invalid order data:", err);
+                    return;
+                }
+
+                // Items list
+                let itemsHtml = order.orderedItems.map(item => `
+        <li>
+            <strong>${item.product?.productName || 'Unknown Product'}</strong>
+            — Qty: ${item.quantity}
+            — Price: ₹${item.price}
+        </li>
+    `).join("");
+
+                // Address details
+                let addressHtml = `
+        <p><strong>Name:</strong> ${order.address?.name}</p>
+        <p><strong>Type:</strong> ${order.address?.addressType}</p>
+        <p><strong>City:</strong> ${order.address?.city}</p>
+        <p><strong>Landmark:</strong> ${order.address?.landMark}</p>
+        <p><strong>State:</strong> ${order.address?.state}</p>
+        <p><strong>Pincode:</strong> ${order.address?.pincode}</p>
+        <p><strong>Phone:</strong> ${order.address?.phone}</p>
+        <p><strong>Alt Phone:</strong> ${order.address?.altPhone}</p>
+    `;
+
+                Swal.fire({
+                    title: `Order #${order.orderId}`,
+                    html: `
+            <p><strong>Date:</strong> ${new Date(order.createdOn).toLocaleString()}</p>
+            <p><strong>Status:</strong> ${order.status}</p>
+            <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+            <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
+            <hr>
+            <h4>Items:</h4>
+            <ul>${itemsHtml}</ul>
+            <hr>
+            <h4>Address:</h4>
+            ${addressHtml}
+            <hr>
+            <p><strong>Total Price:</strong> ₹${order.totalPrice}</p>
+            <p><strong>Discount:</strong> ₹${order.discount}</p>
+            <p><strong>Delivery Charge:</strong> ₹${order.deliveryCharge}</p>
+            <p><strong>Final Amount:</strong> ₹${order.finalAmount}</p>
+            ${order.couponApplied ? `<p><strong>Coupon Code:</strong> ${order.couponCode}</p>` : ""}
+        `,
+                    width: 650,
+                    confirmButtonText: "Close"
+                });
             }
         </script>

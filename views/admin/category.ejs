@@ -1,269 +1,294 @@
-<%- include("../partials/admin/header")  %>
+<%- include("../partials/admin/header") %>
 
-<section class="content-main">
-    <div class="content-header">
-        <div>
-            <h2 class="content-title card-title">Categories</h2>
-            <p>Add, edit or delete a category</p>
+    <section class="content-main">
+        <div class="content-header">
+            <div>
+                <h2 class="content-title card-title">Categories</h2>
+                <p>Add, edit or delete a category</p>
+            </div>
+            <div>
+                <input type="text" placeholder="Search Categories" class="form-control bg-white">
+            </div>
         </div>
-        <div>
-            <input type="text" placeholder="Search Categories" class="form-control bg-white">
-        </div>
-    </div>
 
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-3">
-                    <form action="/admin/addCategory" method="post" onsubmit="return handleFormSubmit(event);">
-                        <div class="mb-4">
-                            <label for="name" class="form-label">Name</label>
-                            <input type="text" placeholder="Type here" class="form-control" id="name" name="name" />
-                            <small id="nameError" style="color: red; display: none;">Name is required</small>
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <form action="/admin/addCategory" method="post" onsubmit="return handleFormSubmit(event);">
+                            <div class="mb-4">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" placeholder="Type here" class="form-control" id="name" name="name" />
+                                <small id="nameError" style="color: red; display: none;">Name is required</small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea placeholder="Type here" class="form-control" id="description"
+                                    name="description"></textarea>
+                                <small id="descriptionError" style="color: red; display: none;">Description can't be
+                                    empty</small>
+                            </div>
+
+                            <div class="d-grid">
+                                <button class="btn btn-primary" type="submit">Create category</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-md-9">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center"></th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Offer price</th>
+                                        <th>Offer</th>
+                                        <th>Status</th>
+                                        <th>List/unList</th>
+                                        <th>Edit</th> >
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% cat.reverse().forEach((category, index)=> { %>
+                                        <tr>
+                                            <td class="text-center"></td>
+                                            <td><b>
+                                                    <%= category.name %>
+                                                </b></td>
+                                            <td>
+                                                <%= category.description %>
+                                            </td>
+                                            <td>
+                                                <% if (category.categoryOffer) { %>
+                                                    <%= category.categoryOffer %>%
+                                                        <% } else { %>
+                                                            0%
+                                                            <% } %>
+                                            </td>
+
+                                            <td>
+                                                <% if (category.categoryOffer===0) { %>
+                                                    <button class="btn btn-info btn-sm"
+                                                        onclick="addOffer('<%= category._id %>')">Add Offer</button>
+                                                    <% } else { %>
+                                                        <button class="btn btn-info btn-sm"
+                                                            onclick="removeOffer('<%= category._id %>')">Remove
+                                                            Offer</button>
+                                                        <% } %>
+                                            </td>
+                                            <td>
+                                                <% if (category.isListed) { %>
+                                                    <span class="badge rounded-pill alert-success">Listed</span>
+                                                    <% } else { %>
+                                                        <span class="badge rounded-pill alert-danger">Unlisted</span>
+                                                        <% } %>
+                                            </td>
+                                            <td>
+                                                <% if (category.isListed) { %>
+                                                    <button class="btn btn-danger btn-sm">
+                                                        <a href="/admin/listcategory?id=<%=category._id%>"
+                                                            class="text-white text-decoration-none">Unlist</a>
+                                                    </button>
+                                                    <% } else { %>
+                                                        <button class="btn btn-success btn-sm">
+                                                            <a href="/admin/unlistcategory?id=<%=category._id%>"
+                                                                class="text-white text-decoration-none">List</a>
+                                                        </button>
+                                                        <% } %>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-warning btn-sm">
+                                                    <a href="/admin/editcategory?id=<%=category._id %>">Edit</a>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                </tbody>
+                            </table>
                         </div>
-
-                        <div class="mb-4">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea placeholder="Type here" class="form-control" id="description" name="description"></textarea>
-                            <small id="descriptionError" style="color: red; display: none;">Description can't be empty</small>
-                        </div>
-
-                        <div class="d-grid">
-                            <button class="btn btn-primary" type="submit">Create category</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="col-md-9">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th class="text-center"></th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Offer price</th>
-                                    <th>Offer</th>
-                                    <th>Status</th> 
-                                    <th>List/unList</th>
-                                    <th>Edit</th> >
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% cat.reverse().forEach((category, index) => { %>
-                                <tr>
-                                    <td class="text-center"></td>
-                                    <td><b><%= category.name %></b></td>
-                                    <td><%= category.description %></td>
-                                    <td>
-                                        <% if (category.categoryOffer) { %>
-                                            <%= category.categoryOffer %>%
-                                        <% } else { %>
-                                            0%
-                                        <% } %>
-                                    </td>
-                    
-                                    <td>
-                                        <% if (category.categoryOffer === 0) { %>
-                                            <button class="btn btn-info btn-sm" onclick="addOffer('<%= category._id %>')">Add Offer</button>
-                                        <% } else { %>
-                                            <button class="btn btn-info btn-sm" onclick="removeOffer('<%= category._id %>')">Remove Offer</button>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <% if (category.isListed) { %>
-                                            <span class="badge rounded-pill alert-success">Listed</span>
-                                        <% } else { %>
-                                            <span class="badge rounded-pill alert-danger">Unlisted</span>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <% if (category.isListed) { %>
-                                            <button class="btn btn-danger btn-sm">
-                                                <a href="/admin/listcategory?id=<%=category._id%>" class="text-white text-decoration-none">Unlist</a>
-                                            </button>
-                                        <% } else { %>
-                                            <button class="btn btn-success btn-sm">
-                                                <a href="/admin/unlistcategory?id=<%=category._id%>" class="text-white text-decoration-none">List</a>
-                                            </button>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-warning btn-sm">
-                                            <a href="/admin/editcategory?id=<%=category._id %>">Edit</a>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <% }); %>
-                            </tbody>
-                        </table>                        
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<script>
-async function handleFormSubmit(event) {
-    event.preventDefault();
+    <script>
+        async function handleFormSubmit(event) {
+            event.preventDefault();
 
-    if (!validateForm()) {
-        return;
-    }
-
-    const name = document.getElementById("name").value.trim();
-    const description = document.getElementById("description").value.trim();
-
-    try {
-        const response = await fetch('/admin/addCategory', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name, description })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Unknown error');
-        }
-
-
-        const data = await response.json();
-
-        location.reload();
-    } catch (error) {
-
-        if (error.message === "Category already exists") {
-            Swal.fire({
-                icon: 'error',
-                title: "Oops",
-                text: "Category already exists"
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: "Oops",
-                text: "An error occurred while adding the category"
-            });
-        }
-    }
-}
-
-
-
-function validateForm() {
-    clearErrorMessages();
-
-    const name = document.getElementById("name").value.trim();
-    const description = document.getElementById("description").value.trim();
-    let isValid = true;
-
-    if (name === "") {
-        displayErrorMessage("nameError", "Please enter a name");
-        isValid = false;
-    } else if (!/^[a-zA-Z\s]+$/.test(name)) {
-        displayErrorMessage("nameError", "Category name should contain only alphabetic characters");
-        isValid = false;
-    }
-
-    if (description === "") {
-        displayErrorMessage("descriptionError", "Please enter a description");
-        isValid = false;
-    }
-
-    return isValid;
-}
-
-function displayErrorMessage(elementId, message) {
-    let errorElement = document.getElementById(elementId);
-    errorElement.innerText = message;
-    errorElement.style.display = "block";
-}
-
-function clearErrorMessages() {
-    const errorElements = document.querySelectorAll(".error-message");
-    errorElements.forEach((element) => {
-        element.innerText = "";
-        element.style.display = "none";
-    });
-}
-
-async function addOffer(categoryId) {
-    const { value: amount } = await Swal.fire({
-        title: "Offer in percentage",
-        input: "number",
-        inputLabel: "Percentage",
-        inputPlaceholder: "%",
-    });
-    if (amount) {
-        try {
-            const response = await fetch("/admin/addCategoryOffer", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    percentage: amount,
-                    categoryId: categoryId
-                })
-            });
-            const data = await response.json();
-            if (response.ok && data.status === true) {
-                Swal.fire(
-                    "Offer added",
-                    "The offer has been added",
-                    "success"
-                ).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire("Failed", data.message || "Adding offer failed", "error");
+            if (!validateForm()) {
+                return;
             }
-        } catch (error) {
-            Swal.fire(
-                "Error",
-                "An error occurred while adding the offer",
-                "error"
-            );
-            console.log("Error adding offer", error);
-        }
-    }
-}
 
-async function removeOffer(categoryId) {
-    try {
-        const response = await fetch("/admin/removeCategoryOffer", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({
-                categoryId: categoryId,
-            })
-        });
-        const data = await response.json();
-        if (response.ok && data.status === true) {
-            Swal.fire(
-                "Offer removed",
-                "The offer has been removed",
-                "Success"
-            ).then(() => {
+            const name = document.getElementById("name").value.trim();
+            const description = document.getElementById("description").value.trim();
+
+            try {
+                const response = await fetch('/admin/addCategory', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, description })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Unknown error');
+                }
+
+
+                const data = await response.json();
+
                 location.reload();
-            });
-        } else {
-            Swal.fire("Failed", data.message || "Removed Offer Failed", "error");
-        }
-    } catch (error) {
-        Swal.fire(
-            "Error",
-            "An error occurred while removing the Offer",
-            "error"
-        );
-        console.log("Error in removing Offer", error);
-    }
-}
-</script>
+            } catch (error) {
 
-<%- include("../partials/admin/footer")  %>
+                if (error.message === "Category already exists") {
+                    Swal.fire({
+                        icon: 'error',
+                        title: "Oops",
+                        text: "Category already exists"
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: "Oops",
+                        text: "An error occurred while adding the category"
+                    });
+                }
+            }
+        }
+
+
+
+        function validateForm() {
+            clearErrorMessages();
+
+            const name = document.getElementById("name").value.trim();
+            const description = document.getElementById("description").value.trim();
+            let isValid = true;
+
+            if (name === "") {
+                displayErrorMessage("nameError", "Please enter a name");
+                isValid = false;
+            } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+                displayErrorMessage("nameError", "Category name should contain only alphabetic characters");
+                isValid = false;
+            }
+
+            if (description === "") {
+                displayErrorMessage("descriptionError", "Please enter a description");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function displayErrorMessage(elementId, message) {
+            let errorElement = document.getElementById(elementId);
+            errorElement.innerText = message;
+            errorElement.style.display = "block";
+        }
+
+        function clearErrorMessages() {
+            const errorElements = document.querySelectorAll(".error-message");
+            errorElements.forEach((element) => {
+                element.innerText = "";
+                element.style.display = "none";
+            });
+        }
+
+        async function addOffer(categoryId) {
+            const { value: amount } = await Swal.fire({
+                title: "Offer in percentage",
+                input: "number",
+                inputLabel: "Percentage",
+                inputPlaceholder: "%",
+            });
+
+            if (amount === null) return; 
+
+            // Convert to number and validate
+            const percentage = Number(amount);
+
+            if (isNaN(percentage) || percentage <= 0 || percentage > 95) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Invalid Offer",
+                    text: "Offer must be greater than 0% and less than or equal to 95%",
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch("/admin/addCategoryOffer", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        percentage,
+                        categoryId
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.status === true) {
+                    Swal.fire(
+                        "Offer added",
+                        "The offer has been added",
+                        "success"
+                    ).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire("Failed", data.message || "Adding offer failed", "error");
+                }
+            } catch (error) {
+                Swal.fire(
+                    "Error",
+                    "An error occurred while adding the offer",
+                    "error"
+                );
+                console.log("Error adding offer", error);
+            }
+        }
+
+        async function removeOffer(categoryId) {
+            try {
+                const response = await fetch("/admin/removeCategoryOffer", {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        categoryId: categoryId,
+                    })
+                });
+                const data = await response.json();
+                if (response.ok && data.status === true) {
+                    Swal.fire(
+                        "Offer removed",
+                        "The offer has been removed",
+                        "Success"
+                    ).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire("Failed", data.message || "Removed Offer Failed", "error");
+                }
+            } catch (error) {
+                Swal.fire(
+                    "Error",
+                    "An error occurred while removing the Offer",
+                    "error"
+                );
+                console.log("Error in removing Offer", error);
+            }
+        }
+    </script>
+
+    <%- include("../partials/admin/footer") %>

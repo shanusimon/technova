@@ -42,13 +42,12 @@
                             <div class="col-lg-4 mb-4">
                                 <label class="form-label">Brand</label>
                                 <select class="form-select border" name="brand">
-
-                                    <%for(let i=0;i<brand.length;i++){%>
-                                        <option value="<%=brand[i].brandName%>">
-                                            <%=brand[i].brandName%>
+                                    <option value="" disabled selected>Select a brand</option>
+                                    <% for (let i=0; i < brand.length; i++) { %>
+                                        <option value="<%= brand[i].brandName %>">
+                                            <%= brand[i].brandName %>
                                         </option>
-                                        <%}%>
-
+                                        <% } %>
                                 </select>
                                 <div id="brand-error" class="error-message"></div>
                             </div>
@@ -100,15 +99,15 @@
                                         <div class="col-sm-6 mb-3">
                                             <label class="form-label">Category</label>
                                             <select class="form-select border" style="width: 150px;" name="category">
-
-                                                <%for(let i=0;i<cat.length;i++){%>
-                                                    <option value="<%=cat[i].name%>">
-                                                        <%=cat[i].name%>
+                                                <option value="" disabled selected>Select a category</option>
+                                                <% for (let i=0; i < cat.length; i++) { %>
+                                                    <option value="<%= cat[i].name %>">
+                                                        <%= cat[i].name %>
                                                     </option>
-                                                    <%}%>
-
+                                                    <% } %>
                                             </select>
                                             <div id="category-error" class="error-message"></div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -312,6 +311,15 @@
             let isValid = true
             if (name.trim() === "") {
                 displayErrorMessage('productName-error', 'Please enter a product name.');
+                isValid = false;
+            }
+            if (!brand) {
+                displayErrorMessage('brand-error', 'Please select a brand.');
+                isValid = false;
+            }
+
+            if (!category) {
+                displayErrorMessage('category-error', 'Please select a category.');
                 isValid = false;
             }
 
