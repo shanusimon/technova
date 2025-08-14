@@ -1,4 +1,5 @@
 const Address = require("../../models/addressSchema");
+const STATUSCODES = require("../../constants/statuscode");
 
 const getAddAddress = async (req, res) => {
   try {
@@ -23,7 +24,7 @@ const saveUserData = async (req, res) => {
     res.redirect(`/userprofile?id=${userId}&success=true`);
   } catch (error) {
     console.error("Error saving user data:", error);
-    res.status(500).send("Server error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send("Server error");
   }
 };
 
@@ -66,7 +67,7 @@ const saveEditAddress = async (req, res) => {
             ...updatedAddress,
           };
         } else {
-          return res.status(404).json({ message: "Address not found" });
+          return res.status(STATUSCODES.NOT_FOUND).json({ message: "Address not found" });
         }
       } else {
         addressDoc.addresses.push(updatedAddress);
@@ -82,7 +83,7 @@ const saveEditAddress = async (req, res) => {
       });
       await addressDoc.save();
       res
-        .status(201)
+        .status(STATUSCODES.CREATED)
         .json({ message: "Address saved successfully", address: addressDoc });
     }
   } catch (error) {
@@ -98,7 +99,7 @@ const deleteAddress = async (req, res) => {
 
     if (!addressId) {
       console.error("No address ID provided in request");
-      return res.status(400).send("Address ID is required");
+      return res.status(STATUSCODES.BAD_REQUEST).send("Address ID is required");
     }
 
     const updatedAddress = await Address.findOneAndUpdate(
@@ -109,12 +110,12 @@ const deleteAddress = async (req, res) => {
 
     if (!updatedAddress) {
       console.error("Address not found or already deleted");
-      return res.status(404).send("Address not found");
+      return res.status(STATUSCODES.NOT_FOUND).send("Address not found");
     }
     res.redirect("/userprofile");
   } catch (error) {
     console.error("Error deleting address:", error);
-    res.status(500).send("Error deleting address");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send("Error deleting address");
   }
 };
 
@@ -135,10 +136,10 @@ const getEditAddress = async (req, res) => {
           address,
         });
       } else {
-        res.status(404).send("Address Not Found");
+        res.status(STATUSCODES.NOT_FOUND).send("Address Not Found");
       }
     } else {
-      res.status(404).send("Address Not Found");
+      res.status(STATUSCODES.NOT_FOUND).send("Address Not Found");
     }
   } catch (error) {
     console.log("Error rendering on Edit address page", error);
@@ -185,7 +186,7 @@ const saveAddress = async (req, res) => {
     res.redirect("/userprofile");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error saving address" });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ message: "Error saving address" });
   }
 };
 

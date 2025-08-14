@@ -1,5 +1,7 @@
 const Product = require("../../models/productSchema");
 const Cart = require("../../models/cartSchema");
+const StatusCodes = require("../../constants/statuscode");
+
 
 const getCart = async (req, res) => {
   try {
@@ -36,12 +38,12 @@ const saveToCart = async (req, res) => {
 
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).send("Product not found");
+      return res.status(StatusCodes.NOT_FOUND).send("Product not found");
     }
 
     const requestedQty = parseInt(req.body.quantity);
     if (isNaN(requestedQty) || requestedQty <= 0) {
-      return res.status(400).send("Invalid quantity");
+      return res.status(StatusCodes.BAD_REQUEST).send("Invalid quantity");
     }
 
     const cartDoc = await Cart.findOne({ userId });
@@ -92,7 +94,7 @@ const saveToCart = async (req, res) => {
     return res.redirect("/cart");
   } catch (error) {
     console.error("Error saving to cart:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Internal Server Error");
   }
 };
 
@@ -103,14 +105,14 @@ const updateQuantity = async (req, res) => {
 
     if (!user) {
       return res
-        .status(401)
+        .status(StatusCodes.UNAUTHORIZED)
         .json({ success: false, message: "User not logged in" });
     }
 
     const cart = await Cart.findOne({ userId: user._id });
     if (!cart) {
       return res
-        .status(404)
+        .status(StatusCodes.NOT_FOUND)
         .json({ success: false, message: "Cart not found" });
     }
 
@@ -119,14 +121,14 @@ const updateQuantity = async (req, res) => {
     );
     if (itemIndex === -1) {
       return res
-        .status(404)
+        .status(StatusCodes.NOT_FOUND)
         .json({ success: false, message: "Item not found in cart" });
     }
 
     const newQuantity = cart.items[itemIndex].quantity + change;
     if (newQuantity < 0) {
       return res
-        .status(400)
+        .status(StatusCodes.BAD_REQUEST)
         .json({ success: false, message: "Quantity cannot be negative" });
     }
 
@@ -155,7 +157,7 @@ const updateQuantity = async (req, res) => {
   } catch (error) {
     console.error("Error updating cart quantity:", error);
     return res
-      .status(500)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ success: false, message: "Internal server error" });
   }
 };

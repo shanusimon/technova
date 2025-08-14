@@ -2,6 +2,7 @@ const User = require("../../models/userSchema");
 const Wallet = require("../../models/walletSchema");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
+const STATUSCODES = require("../../constants/statuscode");
 
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -50,7 +51,6 @@ const generateCoupon = (length) => {
 
   return result;
 };
-
 
 const verifyOtp = async (req, res) => {
   try {
@@ -113,12 +113,14 @@ const verifyOtp = async (req, res) => {
       res.json({ success: true, redirectUrl: "/" });
     } else {
       res
-        .status(400)
+        .status(STATUSCODES.BAD_REQUEST)
         .json({ success: false, message: "Invalid OTP, Please try again" });
     }
   } catch (error) {
     console.error("Error Verifying OTP", error);
-    res.status(500).json({ success: false, message: "An error occurred" });
+    res
+      .status(STATUSCODES.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: "An error occurred" });
   }
 };
 
@@ -128,7 +130,7 @@ const resendOtp = async (req, res) => {
 
     if (!email) {
       return res
-        .status(400)
+        .status(STATUSCODES.BAD_REQUEST)
         .json({ success: false, message: "Email not found in session" });
     }
 
@@ -141,17 +143,17 @@ const resendOtp = async (req, res) => {
     if (emailSent) {
       console.log("Resend OTP:", otp);
       return res
-        .status(200)
+        .status(STATUSCODES.OK)
         .json({ success: true, message: "OTP Resent Successfully" });
     } else {
-      return res.status(500).json({
+      return res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: "Failed to resend OTP. Please try again.",
       });
     }
   } catch (error) {
     console.error("Error resending OTP:", error);
-    return res.status(500).json({
+    return res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Internal Server Error: Please try again.",
     });
@@ -264,5 +266,5 @@ module.exports = {
   loadlogin,
   login,
   logout,
-  signup
+  signup,
 };
